@@ -1,191 +1,194 @@
 # JamBot
 
-[Versión en español](README.es.md)
+[English version](README.en.md)
 
-Discord bot for the Tranki Jam mentor server, built with [discord.js v14](https://discord.js.org/).
+Bot de Discord para el servidor de mentores de Tranki Jam, hecho con [discord.js v14](https://discord.js.org/).
 
-It welcomes new members with a random phrase, lets people pick their own roles from a button menu,
-gives moderators a command to assign roles, and runs "Mata la jerga", a Taboo-style game where you
-explain a game dev term without using the banned words.
+Da la bienvenida a los miembros nuevos con una frase aleatoria, deja que cada cual elija sus roles desde
+un menú de botones, ofrece a los moderadores un comando para asignar roles y organiza "Mata la jerga",
+un juego al estilo Tabú en el que hay que explicar un término de desarrollo de videojuegos sin usar las
+palabras prohibidas.
 
-Everything the bot says in Discord is in Spanish. Command names such as `/role` and `/rolemenu`
-stay in English.
+Todo lo que el bot dice en Discord está en español. Los nombres de los comandos, como `/role` o
+`/rolemenu`, se quedan en inglés.
 
-## Project structure
+## Estructura del proyecto
 
 ```
 src/
-├── index.js                  # Entry point: wires everything together and logs in
-├── client.js                 # Creates the Discord client (intents, partials)
-├── deploy-commands.js        # Registers slash commands with Discord (npm run deploy)
+├── index.js                  # Punto de entrada: conecta todo e inicia sesión
+├── client.js                 # Crea el cliente de Discord (intents, partials)
+├── deploy-commands.js        # Registra los comandos de barra en Discord (npm run deploy)
 ├── config/
-│   ├── index.js              # Loads and validates .env
-│   ├── jergaTerms.js         # Terms and banned words for Mata la jerga
-│   └── welcomePhrases.js     # Welcome phrases
-├── commands/                 # One file per slash command
+│   ├── index.js              # Carga y valida .env
+│   ├── jergaTerms.js         # Términos y palabras prohibidas de Mata la jerga
+│   └── welcomePhrases.js     # Frases de bienvenida
+├── commands/                 # Un archivo por comando de barra
 │   ├── jerga.js              # /jerga start|next|cancel|scores|glossary|schedule|tutorial
-│   ├── phrases.js            # /phrases                         (role in PREVIEW_ROLE_ID)
+│   ├── phrases.js            # /phrases                         (rol de PREVIEW_ROLE_ID)
 │   ├── ping.js               # /ping
-│   ├── role.js               # /role add|remove <user> <role>   (Manage Roles)
-│   ├── rolemenu.js           # /rolemenu create                 (Manage Roles)
-│   └── welcome.js            # /welcome preview|send            (Manage Server)
-├── events/                   # One file per gateway event
+│   ├── role.js               # /role add|remove <user> <role>   (Gestionar roles)
+│   ├── rolemenu.js           # /rolemenu create                 (Gestionar roles)
+│   └── welcome.js            # /welcome preview|send            (Gestionar servidor)
+├── events/                   # Un archivo por evento del gateway
 │   ├── ready.js
-│   ├── guildMemberAdd.js     # Welcome message and auto-role
-│   └── interactionCreate.js  # Routes commands, buttons and modals
-├── interactions/             # Button, select menu and modal handlers, routed by customId prefix
-│   ├── jerga.js              # Buttons and modal for Mata la jerga
-│   └── roleMenu.js           # rolemenu:setup (role picker) and rolemenu:toggle:<roleId>
-├── handlers/                 # Loaders for commands, events and component handlers
+│   ├── guildMemberAdd.js     # Mensaje de bienvenida y rol automático
+│   └── interactionCreate.js  # Reparte comandos, botones y modales
+├── interactions/             # Manejadores de botones, menús y modales, por prefijo del customId
+│   ├── jerga.js              # Botones y modal de Mata la jerga
+│   └── roleMenu.js           # rolemenu:setup (selector de roles) y rolemenu:toggle:<roleId>
+├── handlers/                 # Cargadores de comandos, eventos y componentes
 │   ├── commandHandler.js
 │   ├── eventHandler.js
 │   └── componentHandler.js
-├── services/                 # Logic shared by commands and events
-│   ├── jergaScheduler.js     # Starts jerga rounds automatically at random times
-│   ├── jergaService.js       # Mata la jerga rounds, voting, scores, glossary
-│   ├── roleMenuService.js    # Validates picked roles, builds the menu
-│   ├── roleService.js        # Add, remove and toggle roles with hierarchy checks
-│   └── welcomeService.js     # Builds the welcome message
+├── services/                 # Lógica compartida por comandos y eventos
+│   ├── jergaScheduler.js     # Inicia rondas de jerga automáticamente a horas aleatorias
+│   ├── jergaService.js       # Rondas, votación, puntos y glosario de Mata la jerga
+│   ├── roleMenuService.js    # Valida los roles elegidos y construye el menú
+│   ├── roleService.js        # Añade, quita y alterna roles con comprobación de jerarquía
+│   └── welcomeService.js     # Construye el mensaje de bienvenida
 └── utils/
-    ├── errors.js             # UserFacingError, safe to show to users
+    ├── errors.js             # UserFacingError, seguro de mostrar a la gente
     ├── logger.js
     ├── random.js
-    ├── store.js              # JSON persistence (data/store.json)
+    ├── store.js              # Persistencia JSON (data/store.json)
     └── text.js
 ```
 
-## Setup
+## Puesta en marcha
 
-### 1. Create the bot in the Discord Developer Portal
+### 1. Crea el bot en el Portal de desarrolladores de Discord
 
-1. Go to <https://discord.com/developers/applications> and click New Application.
-2. In General Information, copy the Application ID. That is `CLIENT_ID`.
-3. In the Bot tab, click Reset Token and copy the token. That is `DISCORD_TOKEN`. It is shown only once.
-4. Still in the Bot tab, under Privileged Gateway Intents, enable Server Members Intent.
-   Without it the bot never sees people joining and cannot welcome them.
-5. In the Installation tab (or OAuth2 > URL Generator), pick the `bot` and `applications.commands`
-   scopes and these permissions: View Channels, Send Messages, Embed Links, Read Message History,
-   Manage Roles. Or use this URL with your own client id:
+1. Entra en <https://discord.com/developers/applications> y pulsa New Application.
+2. En General Information, copia el Application ID. Eso es `CLIENT_ID`.
+3. En la pestaña Bot, pulsa Reset Token y copia el token. Eso es `DISCORD_TOKEN`. Solo se muestra una vez.
+4. En esa misma pestaña, dentro de Privileged Gateway Intents, activa Server Members Intent.
+   Sin él, el bot nunca se entera de que alguien entra y no puede darle la bienvenida.
+5. En la pestaña Installation (o en OAuth2 > URL Generator), marca los scopes `bot` y
+   `applications.commands` y estos permisos: Ver canales, Enviar mensajes, Insertar enlaces,
+   Leer el historial de mensajes y Gestionar roles. O usa esta URL con tu propio client id:
 
    ```
-   https://discord.com/oauth2/authorize?client_id=YOUR_CLIENT_ID&scope=bot%20applications.commands&permissions=268520448
+   https://discord.com/oauth2/authorize?client_id=TU_CLIENT_ID&scope=bot%20applications.commands&permissions=268520448
    ```
 
-6. Open the URL and invite the bot to your server.
+6. Abre la URL e invita al bot a tu servidor.
 
-### 2. Role hierarchy
+### 2. Jerarquía de roles
 
-Discord only lets a bot manage roles that sit below the bot's own role. In Server Settings > Roles,
-drag the bot's role above every role it should hand out: the self-assignable ones, the auto-role, and
-anything moderators will assign with `/role`.
+Discord solo deja que un bot gestione los roles que están por debajo del suyo. En Ajustes del servidor >
+Roles, arrastra el rol del bot por encima de todos los roles que deba repartir: los autoasignables, el
+rol automático y cualquiera que los moderadores vayan a asignar con `/role`.
 
-### 3. IDs you need
+### 3. IDs que necesitas
 
-Enable Developer Mode in Discord (User Settings > Advanced). Then right-click to copy:
+Activa el Modo desarrollador en Discord (Ajustes de usuario > Avanzado). Luego, con clic derecho, copia
+el ID de:
 
-- your server, for `GUILD_ID`
-- the welcome channel, for `WELCOME_CHANNEL_ID`
-- the game channel, for `JERGA_CHANNEL_ID`
-- optionally a role, for `AUTO_ROLE_ID` and `PREVIEW_ROLE_ID`
+- tu servidor, para `GUILD_ID`
+- el canal de bienvenida, para `WELCOME_CHANNEL_ID`
+- el canal del juego, para `JERGA_CHANNEL_ID`
+- opcionalmente un rol, para `AUTO_ROLE_ID` y `PREVIEW_ROLE_ID`
 
-### 4. Configure
+### 4. Configura
 
 ```bash
-cp .env.example .env      # then fill in the values
+cp .env.example .env      # y rellena los valores
 ```
 
-Welcome phrases live in [`src/config/welcomePhrases.js`](src/config/welcomePhrases.js). `{user}` becomes
-the mention and `{server}` the server name.
+Las frases de bienvenida están en [`src/config/welcomePhrases.js`](src/config/welcomePhrases.js).
+`{user}` se convierte en la mención y `{server}` en el nombre del servidor.
 
-### 5. Install, register commands, run
+### 5. Instala, registra los comandos y arranca
 
-On Windows, run `install.bat` (installs dependencies and registers the slash commands), then `run.bat`
-(starts the bot; keep the window open).
+En Windows, ejecuta `install.bat` (instala las dependencias y registra los comandos de barra) y después
+`run.bat` (arranca el bot; deja la ventana abierta).
 
-From a terminal:
+Desde una terminal:
 
 ```bash
 npm install
-npm run deploy    # registers slash commands (instant when GUILD_ID is set)
-npm start         # or: npm run dev, which restarts on file changes
+npm run deploy    # registra los comandos de barra (al instante si GUILD_ID está definido)
+npm start         # o: npm run dev, que se reinicia al cambiar un archivo
 ```
 
-Run `npm run deploy` again whenever you add or change a command definition. Run only one instance of
-the bot at a time: two copies with the same token answer the same interactions and confuse each other.
+Vuelve a ejecutar `npm run deploy` cada vez que añadas o cambies la definición de un comando. Ejecuta una
+sola instancia del bot: dos copias con el mismo token responden a las mismas interacciones y se pisan.
 
-## Commands
+## Comandos
 
-| Command | Who | What it does |
+| Comando | Quién | Qué hace |
 |---|---|---|
-| `/rolemenu create [channel] [title] [description]` | Manage Roles | Opens a role picker; the roles you tick become a button menu in the channel. |
-| `/role add <user> <role>` | Manage Roles | Gives a role to someone. |
-| `/role remove <user> <role>` | Manage Roles | Takes a role away. |
-| `/welcome preview` | Manage Server | Shows you a sample welcome message (only you see it). |
-| `/welcome send [user]` | Manage Server | Posts a real welcome message to the welcome channel. |
-| `/phrases` | Role in `PREVIEW_ROLE_ID` | Posts every welcome phrase, numbered, in the current channel (no pings). |
-| `/jerga start [duration]` | Everyone | Starts a round right now (only in the game channel). |
-| `/jerga schedule` | Everyone | Shows today's automatic rounds. |
-| `/jerga tutorial` | Everyone | Posts the how-to-play instructions publicly. |
-| `/jerga next` / `/jerga cancel` | Host or Manage Messages | Advance to voting/results, or drop the round. |
-| `/jerga scores` / `/jerga glossary` | Everyone | Leaderboard and the latest winning explanations. |
-| `/ping` | Everyone | Latency check. |
+| `/rolemenu create [channel] [title] [description]` | Gestionar roles | Abre un selector de roles; los que marques se convierten en un menú de botones en el canal. |
+| `/role add <user> <role>` | Gestionar roles | Da un rol a alguien. |
+| `/role remove <user> <role>` | Gestionar roles | Quita un rol. |
+| `/welcome preview` | Gestionar servidor | Te muestra un mensaje de bienvenida de ejemplo (solo lo ves tú). |
+| `/welcome send [user]` | Gestionar servidor | Publica un mensaje de bienvenida real en el canal de bienvenida. |
+| `/phrases` | Rol de `PREVIEW_ROLE_ID` | Publica todas las frases de bienvenida, numeradas, en el canal actual (sin notificar). |
+| `/jerga start [duration]` | Todo el mundo | Empieza una ronda ahora mismo (solo en el canal del juego). |
+| `/jerga schedule` | Todo el mundo | Muestra las rondas automáticas de hoy. |
+| `/jerga tutorial` | Todo el mundo | Publica las instrucciones del juego para todo el mundo. |
+| `/jerga next` / `/jerga cancel` | Anfitrión o Gestionar mensajes | Pasa a votación o resultados, o cancela la ronda. |
+| `/jerga scores` / `/jerga glossary` | Todo el mundo | Clasificación y últimas explicaciones ganadoras. |
+| `/ping` | Todo el mundo | Comprueba la latencia. |
 
-The role menu is a normal message. It stays in the channel and keeps working after restarts because
-each button carries the role id in its `customId`. To change the roles, run `/rolemenu create` again and
-delete the old message. You can post several menus, for example one per discipline. Only roles below
-both the bot and the admin creating the menu can be offered.
+El menú de roles es un mensaje normal. Se queda en el canal y sigue funcionando tras un reinicio porque
+cada botón lleva el id del rol en su `customId`. Para cambiar los roles, ejecuta `/rolemenu create` otra
+vez y borra el mensaje antiguo. Puedes publicar varios menús, por ejemplo uno por disciplina. Solo se
+pueden ofrecer roles por debajo del bot y de quien crea el menú.
 
 ## Mata la jerga
 
-1. A round posts a term and five banned words. Members press "Enviar explicación" and write up to
-   280 characters. The bot rejects any text that uses the term or a banned word, ignoring case, accents
-   and plurals.
-2. When the timer ends, or the host presses "Cerrar envíos y votar", the explanations are shown
-   anonymously in random order with numbered vote buttons. You cannot vote for your own.
-3. When voting ends, the winner is announced and pinged. Winner +3 points, everyone who submitted +1.
-   Ties share the win, and if nobody voted one explanation is picked at random. The winning explanation
-   goes into the glossary.
+1. Una ronda publica un término y cinco palabras prohibidas. La gente pulsa "Enviar explicación" y
+   escribe hasta 280 caracteres. El bot rechaza cualquier texto que use el término o una palabra
+   prohibida, ignorando mayúsculas, acentos y plurales.
+2. Cuando acaba el tiempo, o quien organiza pulsa "Cerrar envíos y votar", las explicaciones se muestran
+   de forma anónima y en orden aleatorio con botones de voto numerados. No puedes votar la tuya.
+3. Cuando acaba la votación, se anuncia y se menciona a quien gana. Ganar da 3 puntos y participar 1.
+   Los empates se reparten y, si nadie vota, se elige una explicación al azar. La explicación ganadora
+   entra en el glosario.
 
-Terms live in [`src/config/jergaTerms.js`](src/config/jergaTerms.js). Scores, glossary and in-progress
-rounds are saved to `data/store.json`, so a restart keeps them and resumes the timers.
+Los términos están en [`src/config/jergaTerms.js`](src/config/jergaTerms.js). Los puntos, el glosario y
+las rondas en curso se guardan en `data/store.json`, así que un reinicio los conserva y retoma los
+temporizadores.
 
-### Automatic rounds
+### Rondas automáticas
 
-With `JERGA_CHANNEL_ID` set, the game only works in that channel and the bot starts rounds by itself.
+Con `JERGA_CHANNEL_ID` definido, el juego solo funciona en ese canal y el bot inicia rondas por su cuenta.
 
-| Variable | Default | Meaning |
+| Variable | Por defecto | Significado |
 |---|---|---|
-| `JERGA_CHANNEL_ID` | (none) | Channel where rounds are posted. Unset means no automatic rounds and commands work anywhere. |
-| `JERGA_ROUNDS_PER_DAY` | 6 | Random start times per day. 0 disables automation. With 3-hour rounds, 8 is the most that fit in a day. |
-| `JERGA_ACTIVE_HOURS` | 0-24 | Rounds only start inside this window, in the local time of the machine running the bot. |
-| `JERGA_SUBMIT_MINUTES` | 120 | How long people have to send explanations. |
-| `JERGA_VOTE_MINUTES` | 60 | How long voting stays open. |
-| `JERGA_ROUND_ON_START` | false | Also post a round the moment the bot logs in. Useful while testing. |
+| `JERGA_CHANNEL_ID` | (ninguno) | Canal donde se publican las rondas. Sin definir, no hay rondas automáticas y los comandos funcionan en cualquier canal. |
+| `JERGA_ROUNDS_PER_DAY` | 6 | Horas de inicio aleatorias al día. 0 desactiva la automatización. Con rondas de 3 horas, caben como mucho 8 al día. |
+| `JERGA_ACTIVE_HOURS` | 0-24 | Las rondas solo empiezan dentro de esta franja, en la hora local de la máquina que ejecuta el bot. |
+| `JERGA_SUBMIT_MINUTES` | 120 | Tiempo para enviar explicaciones. |
+| `JERGA_VOTE_MINUTES` | 60 | Tiempo que dura la votación. |
+| `JERGA_ROUND_ON_START` | false | Publica también una ronda en cuanto el bot inicia sesión. Útil mientras se prueba. |
 
-Each day the bot draws the start times once, spreads them so rounds never overlap, and saves the plan so a
-restart keeps it. Automatic rounds are hosted by the bot; anyone with Manage Messages can still use
-`/jerga next` or `/jerga cancel` on them.
+Cada día el bot sortea las horas de inicio una vez, las reparte para que las rondas no se solapen y
+guarda el plan para que un reinicio lo conserve. Las rondas automáticas las organiza el bot; quien tenga
+Gestionar mensajes puede usar `/jerga next` o `/jerga cancel` con ellas.
 
-## Extending
+## Ampliar el bot
 
-To add a slash command, drop a file in `src/commands/` exporting `{ data, execute }` and run
-`npm run deploy`. Events go in `src/events/` exporting `{ name, once?, execute }`. Buttons, menus and
-modals go in `src/interactions/` exporting `{ prefix, execute }`, with customIds built as
-`prefix:arg1:arg2` through `buildCustomId()` from `handlers/componentHandler.js`.
+Para añadir un comando de barra, crea un archivo en `src/commands/` que exporte `{ data, execute }` y
+ejecuta `npm run deploy`. Los eventos van en `src/events/` y exportan `{ name, once?, execute }`. Los
+botones, menús y modales van en `src/interactions/` y exportan `{ prefix, execute }`, con customIds
+construidos como `prefix:arg1:arg2` mediante `buildCustomId()` de `handlers/componentHandler.js`.
 
-Throw `UserFacingError` for anything the user should read. Any other error is logged and replaced with
-a generic message.
+Lanza `UserFacingError` para cualquier mensaje que deba leer la gente. Cualquier otro error se registra
+en el log y se sustituye por un mensaje genérico.
 
-## Troubleshooting
+## Problemas frecuentes
 
-No welcome messages: the Server Members Intent is off, `WELCOME_CHANNEL_ID` is wrong, or the bot cannot
-view or send in that channel.
+No llegan mensajes de bienvenida: el Server Members Intent está desactivado, `WELCOME_CHANNEL_ID` está
+mal o el bot no puede ver ni escribir en ese canal.
 
-"No puedo gestionar <rol>": the bot's role is below that role, or it lacks Manage Roles.
+"No puedo gestionar <rol>": el rol del bot está por debajo de ese rol o le falta Gestionar roles.
 
-Slash commands missing or answering "Comando desconocido": run `npm run deploy` and restart the bot. Global
-commands (no `GUILD_ID`) can take up to an hour to appear.
+Faltan comandos de barra o responden "Comando desconocido": ejecuta `npm run deploy` y reinicia el bot.
+Los comandos globales (sin `GUILD_ID`) pueden tardar hasta una hora en aparecer.
 
-Buttons say "This interaction failed" or a round is "already over" right after posting: the bot is
-offline, crashed, or a second copy of it is running somewhere else. Check the console and keep a single
-instance.
+Los botones dicen "Esta interacción falló" o una ronda aparece como terminada nada más publicarse: el
+bot está apagado, se ha caído o hay una segunda copia ejecutándose en otro sitio. Revisa la consola y
+mantén una sola instancia.
