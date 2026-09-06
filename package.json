@@ -1,5 +1,5 @@
 {
-  "name": "trankijambot",
+  "name": "jambot",
   "version": "1.0.0",
   "description": "Discord bot that welcomes new members and lets them self-assign roles from a role menu.",
   "main": "src/index.js",

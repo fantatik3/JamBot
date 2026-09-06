@@ -49,10 +49,10 @@ async function handleComponent(interaction) {
 }
 
 async function reportError(interaction, error) {
-  const friendly = error instanceof UserFacingError;
-  if (!friendly) logger.error(`Error handling interaction ${interaction.id}:`, error);
+  const isUserFacing = error instanceof UserFacingError;
+  if (!isUserFacing) logger.error(`Error handling interaction ${interaction.id}:`, error);
 
-  const content = friendly ? error.message : 'Algo salió mal. Inténtalo de nuevo más tarde.';
+  const content = isUserFacing ? error.message : 'Algo salió mal. Inténtalo de nuevo más tarde.';
   const reply = { content, flags: MessageFlags.Ephemeral, allowedMentions: { parse: [] } };
 
   try {

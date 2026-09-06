@@ -158,7 +158,7 @@ function buildRoundMessage(round, { closed = false, note = null } = {}) {
     )
     .setFooter({ text: 'Las explicaciones se muestran de forma anónima en la votación.' });
 
-  if (note) embed.addFields({ name: '​', value: note });
+  if (note) embed.addFields({ name: '\u200b', value: note });
 
   const components = closed
     ? []
