@@ -1,5 +1,7 @@
 # JamBot
 
+[Versión en español](README.es.md)
+
 Discord bot for the Tranki Jam mentor server, built with [discord.js v14](https://discord.js.org/).
 
 It welcomes new members with a random phrase, lets people pick their own roles from a button menu,
