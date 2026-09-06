@@ -51,7 +51,7 @@ let client = null;
 /** Temporizadores setTimeout activos, indexados por id de ronda. */
 const timers = new Map();
 
-// ── Acceso al almacén ────────────────────────────────────────────────────
+// ---- Acceso al almacén ----
 
 function guildData(guildId) {
   const section = store.section('jerga');
@@ -85,7 +85,7 @@ function getGlossary(guildId) {
   return [...guildData(guildId).glossary].reverse();
 }
 
-// ── Utilidades ───────────────────────────────────────────────────────────
+// ---- Utilidades ----
 
 function messageLink(round, messageId = round.messageId) {
   return `https://discord.com/channels/${round.guildId}/${round.channelId}/${messageId}`;
@@ -139,7 +139,7 @@ async function editMessage(round, messageId, payload) {
   }
 }
 
-// ── Constructores de mensajes ────────────────────────────────────────────
+// ---- Constructores de mensajes ----
 
 function buildRoundMessage(round, { closed = false, note = null } = {}) {
   const banned = round.banned.map((word) => `~~${word}~~`).join('   ');
@@ -351,7 +351,7 @@ function buildTutorialMessage({ channelId = null, roundsPerDay = 0, submitMinute
   return { embeds: [embed], allowedMentions: { parse: [] } };
 }
 
-// ── Temporizadores ───────────────────────────────────────────────────────
+// ---- Temporizadores ----
 
 function clearTimer(roundId) {
   const handle = timers.get(roundId);
@@ -393,7 +393,7 @@ function resume(discordClient) {
   if (resumed > 0) logger.info(`Resumed ${resumed} jerga round(s).`);
 }
 
-// ── Ciclo de vida de la ronda ────────────────────────────────────────────
+// ---- Ciclo de vida de la ronda ----
 
 async function startRound({ guild, channel, hostId, submitMinutes, voteMinutes }) {
   const data = guildData(guild.id);

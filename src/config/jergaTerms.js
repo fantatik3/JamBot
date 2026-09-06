@@ -4,7 +4,7 @@
  * Usa palabras prohibidas cortas y comunes: la gracia es obligar a explicar en lenguaje llano.
  */
 module.exports = [
-  // ── Programación: conceptos básicos ──────────────────────────────────
+  // ---- Programación: conceptos básicos ----
   { term: 'Variable', banned: ['guardar', 'valor', 'nombre', 'dato', 'caja'] },
   { term: 'Array', banned: ['lista', 'elementos', 'índice', 'colección', 'posición'] },
   { term: 'Diccionario', banned: ['clave', 'valor', 'buscar', 'pares', 'lista'] },
@@ -28,7 +28,7 @@ module.exports = [
   { term: 'API', banned: ['funciones', 'usar', 'biblioteca', 'llamar', 'código'] },
   { term: 'Plugin', banned: ['añadir', 'extensión', 'herramienta', 'motor', 'función'] },
 
-  // ── Programación: motor y arquitectura ───────────────────────────────
+  // ---- Programación: motor y arquitectura ----
   { term: 'Motor (engine)', banned: ['Unity', 'Godot', 'herramienta', 'programa', 'crear'] },
   { term: 'Componente', banned: ['pieza', 'objeto', 'añadir', 'comportamiento', 'script'] },
   { term: 'Prefab', banned: ['plantilla', 'copia', 'objeto', 'reutilizar', 'instancia'] },
@@ -53,7 +53,7 @@ module.exports = [
   { term: 'Smooth follow (cámara)', banned: ['seguir', 'personaje', 'suave', 'movimiento', 'brusco'] },
   { term: 'Parallax', banned: ['fondo', 'capas', 'velocidad', 'profundidad', 'mover'] },
 
-  // ── Programación: IA, red y procedural ───────────────────────────────
+  // ---- Programación: IA, red y procedural ----
   { term: 'IA (inteligencia artificial)', banned: ['enemigos', 'comportamiento', 'decidir', 'inteligente', 'cerebro'] },
   { term: 'Behaviour tree', banned: ['árbol', 'decisiones', 'IA', 'ramas', 'comportamiento'] },
   { term: 'Pathfinding', banned: ['camino', 'ruta', 'enemigo', 'llegar', 'obstáculos'] },
@@ -64,7 +64,7 @@ module.exports = [
   { term: 'Latencia (lag)', banned: ['retraso', 'red', 'tiempo', 'lento', 'servidor'] },
   { term: 'Sincronización', banned: ['mismo', 'estado', 'jugadores', 'red', 'tiempo'] },
 
-  // ── Programación: rendimiento y calidad ──────────────────────────────
+  // ---- Programación: rendimiento y calidad ----
   { term: 'Bug', banned: ['error', 'fallo', 'comportamiento', 'esperado', 'arreglar'] },
   { term: 'Debug', banned: ['error', 'encontrar', 'arreglar', 'consola', 'fallo'] },
   { term: 'Breakpoint', banned: ['pausar', 'depurar', 'línea', 'ejecución', 'inspeccionar'] },
@@ -78,13 +78,13 @@ module.exports = [
   { term: 'Batching', banned: ['agrupar', 'dibujar', 'llamadas', 'rendimiento', 'GPU'] },
   { term: 'Hotfix', banned: ['arreglo', 'rápido', 'urgente', 'parche', 'lanzar'] },
 
-  // ── Matemáticas ──────────────────────────────────────────────────────
+  // ---- Matemáticas ----
   { term: 'Vector', banned: ['dirección', 'flecha', 'magnitud', 'posición', 'coordenadas'] },
   { term: 'Vector unitario', banned: ['longitud', 'uno', 'dirección', 'tamaño', 'normalizar'] },
   { term: 'Producto escalar (dot)', banned: ['vectores', 'ángulo', 'multiplicar', 'dirección', 'número'] },
   { term: 'Curva Bézier', banned: ['puntos', 'suave', 'control', 'línea', 'trayectoria'] },
 
-  // ── Arte 2D ──────────────────────────────────────────────────────────
+  // ---- Arte 2D ----
   { term: 'Sprite', banned: ['imagen', 'dibujo', 'personaje', '2D', 'animación'] },
   { term: 'Sprite sheet', banned: ['imagen', 'fotogramas', 'animación', 'cuadrícula', 'archivo'] },
   { term: 'Pixel art', banned: ['pequeño', 'cuadrado', 'resolución', 'dibujo', 'retro'] },
@@ -100,7 +100,7 @@ module.exports = [
   { term: 'Moodboard', banned: ['imágenes', 'referencias', 'estilo', 'inspiración', 'collage'] },
   { term: 'Guía de estilo', banned: ['reglas', 'colores', 'consistente', 'documento', 'aspecto'] },
 
-  // ── Arte 3D ──────────────────────────────────────────────────────────
+  // ---- Arte 3D ----
   { term: 'Mesh (malla)', banned: ['vértices', 'polígonos', 'forma', 'modelo', 'triángulos'] },
   { term: 'Polígono', banned: ['triángulo', 'cara', 'malla', 'modelo', 'forma'] },
   { term: 'Low poly', banned: ['pocos', 'polígonos', 'sencillo', 'estilo', 'triángulos'] },
@@ -130,7 +130,7 @@ module.exports = [
   { term: 'Partículas', banned: ['efectos', 'pequeñas', 'fuego', 'humo', 'muchas'] },
   { term: 'VFX', banned: ['efectos', 'visuales', 'partículas', 'explosión', 'magia'] },
 
-  // ── Animación ────────────────────────────────────────────────────────
+  // ---- Animación ----
   { term: 'Rig', banned: ['huesos', 'esqueleto', 'animar', 'personaje', 'deformar'] },
   { term: 'Animación esquelética', banned: ['huesos', 'rig', 'mover', 'personaje', 'deformar'] },
   { term: 'Animación por fotogramas', banned: ['dibujos', 'seguidos', 'imágenes', 'movimiento', 'secuencia'] },
@@ -141,7 +141,7 @@ module.exports = [
   { term: 'Squash and stretch', banned: ['aplastar', 'estirar', 'animación', 'peso', 'vivo'] },
   { term: 'Anticipación (animación)', banned: ['antes', 'movimiento', 'preparar', 'avisar', 'salto'] },
 
-  // ── Interfaz ─────────────────────────────────────────────────────────
+  // ---- Interfaz ----
   { term: 'UI', banned: ['botones', 'menús', 'pantalla', 'interfaz', 'jugador'] },
   { term: 'HUD', banned: ['pantalla', 'información', 'vida', 'interfaz', 'jugador'] },
   { term: 'Wireframe', banned: ['boceto', 'pantalla', 'cajas', 'diseño', 'estructura'] },
@@ -150,7 +150,7 @@ module.exports = [
   { term: 'Accesibilidad', banned: ['todos', 'jugar', 'opciones', 'discapacidad', 'adaptar'] },
   { term: 'Remapeo de controles', banned: ['teclas', 'cambiar', 'botones', 'asignar', 'jugador'] },
 
-  // ── Audio ────────────────────────────────────────────────────────────
+  // ---- Audio ----
   { term: 'SFX', banned: ['efectos', 'sonido', 'golpe', 'corto', 'acción'] },
   { term: 'BGM', banned: ['música', 'fondo', 'escuchar', 'ambiente', 'canción'] },
   { term: 'Chiptune', banned: ['8 bits', 'retro', 'consola', 'sonido', 'música'] },
@@ -175,7 +175,7 @@ module.exports = [
   { term: 'Pasos (footsteps)', banned: ['caminar', 'superficie', 'sonido', 'pies', 'material'] },
   { term: 'Doblaje (voces)', banned: ['actor', 'grabar', 'personaje', 'hablar', 'diálogo'] },
 
-  // ── Diseño ───────────────────────────────────────────────────────────
+  // ---- Diseño ----
   { term: 'Mecánica', banned: ['regla', 'acción', 'jugador', 'hacer', 'sistema'] },
   { term: 'Dinámica', banned: ['mecánicas', 'jugador', 'surge', 'comportamiento', 'interacción'] },
   { term: 'Estética (MDA)', banned: ['emoción', 'sentir', 'jugador', 'experiencia', 'diversión'] },
@@ -220,7 +220,7 @@ module.exports = [
   { term: 'Scope creep', banned: ['alcance', 'añadir', 'funciones', 'tiempo', 'crecer'] },
   { term: 'Kill your darlings', banned: ['quitar', 'idea', 'favorita', 'eliminar', 'mejor'] },
 
-  // ── Narrativa ────────────────────────────────────────────────────────
+  // ---- Narrativa ----
   { term: 'Worldbuilding', banned: ['mundo', 'historia', 'crear', 'lore', 'universo'] },
   { term: 'Lore', banned: ['historia', 'mundo', 'fondo', 'detalles', 'universo'] },
   { term: 'Narrativa ambiental', banned: ['entorno', 'contar', 'escenario', 'objetos', 'diálogo'] },
@@ -245,7 +245,7 @@ module.exports = [
   { term: 'Cinemática', banned: ['vídeo', 'escena', 'ver', 'historia', 'control'] },
   { term: 'Quest', banned: ['misión', 'objetivo', 'tarea', 'recompensa', 'completar'] },
 
-  // ── Producción ───────────────────────────────────────────────────────
+  // ---- Producción ----
   { term: 'Roadmap', banned: ['plan', 'futuro', 'fechas', 'objetivos', 'camino'] },
   { term: 'Backlog', banned: ['lista', 'tareas', 'pendientes', 'hacer', 'prioridad'] },
   { term: 'Sprint', banned: ['semanas', 'tareas', 'periodo', 'corto', 'objetivo'] },
@@ -270,7 +270,7 @@ module.exports = [
   { term: 'Trailer', banned: ['vídeo', 'corto', 'mostrar', 'juego', 'promocionar'] },
   { term: 'Página de itch.io', banned: ['subir', 'publicar', 'web', 'juego', 'descargar'] },
 
-  // ── Control de versiones ─────────────────────────────────────────────
+  // ---- Control de versiones ----
   { term: 'Control de versiones', banned: ['git', 'cambios', 'historial', 'commit', 'guardar'] },
   { term: 'Repositorio', banned: ['código', 'guardar', 'proyecto', 'historial', 'nube'] },
   { term: 'Commit', banned: ['guardar', 'cambios', 'mensaje', 'historial', 'punto'] },
@@ -280,7 +280,7 @@ module.exports = [
   { term: 'Fork (git)', banned: ['copia', 'repositorio', 'propia', 'cambios', 'original'] },
   { term: '.gitignore', banned: ['archivos', 'ignorar', 'subir', 'secretos', 'lista'] },
 
-  // ── Cultura de jam ───────────────────────────────────────────────────
+  // ---- Cultura de jam ----
   { term: 'Game jam', banned: ['tiempo', 'horas', 'evento', 'crear', 'equipo'] },
   { term: 'Tema de la jam', banned: ['palabra', 'idea', 'inspiración', 'obligatorio', 'anunciar'] },
   { term: 'Ludum Dare', banned: ['jam', 'famosa', 'horas', 'evento', 'tema'] },
