@@ -1,6 +1,6 @@
 /**
- * Minimal leveled logger with ISO timestamps.
- * Reads LOG_LEVEL lazily so it works before and after dotenv loads.
+ * Logger mínimo por niveles con marcas de tiempo ISO.
+ * Lee LOG_LEVEL en cada llamada para funcionar antes y después de cargar dotenv.
  */
 const LEVELS = { debug: 10, info: 20, warn: 30, error: 40 };
 

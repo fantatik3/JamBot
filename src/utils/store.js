@@ -1,7 +1,7 @@
 /**
- * Tiny JSON persistence for bot state (scores, active game rounds, glossary).
- * The whole store is held in memory and written atomically on every save().
- * Path: data/store.json (override with STORE_PATH, useful for tests).
+ * Persistencia JSON mínima para el estado del bot (puntos, rondas activas, glosario).
+ * Todo el almacén se mantiene en memoria y se escribe de forma atómica en cada save().
+ * Ruta: data/store.json (se puede cambiar con STORE_PATH, útil para pruebas).
  */
 const fs = require('node:fs');
 const path = require('node:path');
@@ -30,7 +30,7 @@ function save() {
   fs.renameSync(tmp, STORE_PATH);
 }
 
-/** Returns (and creates if missing) a named top-level object in the store. */
+/** Devuelve (y crea si no existe) un objeto de primer nivel del almacén por nombre. */
 function section(name) {
   const data = load();
   data[name] ??= {};

@@ -1,11 +1,11 @@
 /**
- * Discovers message-component handlers (buttons, select menus) in `src/interactions`.
+ * Descubre los manejadores de componentes de mensaje (botones, menús desplegables) en `src/interactions`.
  *
- * Handlers are routed by the first segment of the component's customId.
- * A customId of `rolemenu:toggle:123` is dispatched to the handler whose
- * `prefix` is `rolemenu`, receiving `['toggle', '123']` as args.
+ * Los manejadores se eligen por el primer segmento del customId del componente.
+ * Un customId `rolemenu:toggle:123` se envía al manejador cuyo
+ * `prefix` es `rolemenu`, que recibe `['toggle', '123']` como argumentos.
  *
- * Every handler module must export `{ prefix: string, execute(interaction, args) }`.
+ * Cada módulo manejador debe exportar `{ prefix: string, execute(interaction, args) }`.
  */
 const fs = require('node:fs');
 const path = require('node:path');
@@ -42,13 +42,13 @@ function loadComponentHandlers() {
   return handlers;
 }
 
-/** Splits `prefix:arg1:arg2` into `{ prefix, args }`. */
+/** Divide `prefix:arg1:arg2` en `{ prefix, args }`. */
 function parseCustomId(customId) {
   const [prefix, ...args] = customId.split(SEPARATOR);
   return { prefix, args };
 }
 
-/** Builds a customId from a prefix and args. */
+/** Construye un customId a partir de un prefijo y sus argumentos. */
 function buildCustomId(prefix, ...args) {
   return [prefix, ...args].join(SEPARATOR);
 }

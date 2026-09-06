@@ -1,5 +1,5 @@
 /**
- * Entry point. Wires config, client, and all handlers together, then logs in.
+ * Punto de entrada. Conecta la configuración, el cliente y todos los manejadores, y luego inicia sesión.
  */
 const config = require("./config");
 const logger = require("./utils/logger");

@@ -1,6 +1,6 @@
 /**
- * Discovers slash commands in `src/commands`.
- * Every command module must export `{ data: SlashCommandBuilder, execute(interaction) }`.
+ * Descubre los comandos de barra en `src/commands`.
+ * Cada módulo de comando debe exportar `{ data: SlashCommandBuilder, execute(interaction) }`.
  */
 const fs = require('node:fs');
 const path = require('node:path');

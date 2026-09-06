@@ -1,7 +1,7 @@
 /**
- * Handles both halves of the role menu:
- *   rolemenu:setup           -> admin picked roles in the picker; post the menu
- *   rolemenu:toggle:<roleId> -> member clicked a button; add/remove the role
+ * Gestiona las dos mitades del menú de roles:
+ *   rolemenu:setup           -> el administrador eligió roles en el selector; publica el menú
+ *   rolemenu:toggle:<roleId> -> un miembro pulsó un botón; añade o quita el rol
  */
 const { MessageFlags } = require('discord.js');
 const {
@@ -65,7 +65,7 @@ async function handleSetup(interaction) {
     lines.push('', 'Algunos roles se omitieron:', ...problems.map((p) => `• ${p}`));
   }
 
-  // Replace the ephemeral picker with the confirmation.
+  // Sustituye el selector efímero por la confirmación.
   await interaction.update({ content: lines.join('\n'), components: [], ...NO_PINGS });
 }
 

@@ -1,9 +1,9 @@
 /**
- * Builds the Discord client with only the intents this bot needs.
+ * Crea el cliente de Discord solo con los intents que necesita este bot.
  *
- * GuildMembers is a PRIVILEGED intent: it must be enabled in
- * Developer Portal > Bot > Privileged Gateway Intents > Server Members Intent,
- * otherwise `guildMemberAdd` (welcome messages) never fires.
+ * GuildMembers es un intent PRIVILEGIADO: hay que activarlo en
+ * Portal de desarrolladores > Bot > Privileged Gateway Intents > Server Members Intent,
+ * o el evento `guildMemberAdd` (mensajes de bienvenida) nunca se dispara.
  */
 const { Client, GatewayIntentBits, Partials, Collection } = require('discord.js');
 

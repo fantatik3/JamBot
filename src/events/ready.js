@@ -10,7 +10,7 @@ module.exports = {
   /** @param {import('discord.js').Client<true>} client */
   async execute(client) {
     client.user.setPresence({
-      // Custom status shows `state` as-is, with no "Playing"/"Watching" prefix in any client language.
+      // El estado personalizado muestra `state` tal cual, sin el prefijo "Jugando a"/"Viendo" en ningún idioma del cliente.
       activities: [{ name: 'estado', type: ActivityType.Custom, state: 'Dando la bienvenida a los nuevos miembros' }],
       status: 'online',
     });

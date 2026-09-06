@@ -1,6 +1,6 @@
 /**
- * /welcome preview        -> shows you what a welcome message looks like (only you see it)
- * /welcome send [user]    -> posts a real welcome message to the welcome channel
+ * /welcome preview        -> te muestra cómo queda un mensaje de bienvenida (solo lo ves tú)
+ * /welcome send [user]    -> publica un mensaje de bienvenida real en el canal de bienvenida
  */
 const { SlashCommandBuilder, PermissionFlagsBits, MessageFlags, InteractionContextType } = require('discord.js');
 const config = require('../config');

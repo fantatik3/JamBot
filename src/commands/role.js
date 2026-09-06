@@ -1,6 +1,6 @@
 /**
  * /role add|remove <user> <role>
- * Moderator command for manually assigning roles. Requires Manage Roles.
+ * Comando de moderación para asignar roles a mano. Requiere Gestionar roles.
  */
 const { SlashCommandBuilder, PermissionFlagsBits, MessageFlags, InteractionContextType } = require('discord.js');
 const roleService = require('../services/roleService');

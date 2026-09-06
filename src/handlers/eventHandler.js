@@ -1,6 +1,6 @@
 /**
- * Discovers gateway event listeners in `src/events` and binds them to the client.
- * Every event module must export `{ name: Events.X, once?: boolean, execute(...args, client) }`.
+ * Descubre los escuchadores de eventos del gateway en `src/events` y los conecta al cliente.
+ * Cada módulo de evento debe exportar `{ name: Events.X, once?: boolean, execute(...args, client) }`.
  */
 const fs = require('node:fs');
 const path = require('node:path');

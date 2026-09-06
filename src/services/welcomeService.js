@@ -1,5 +1,5 @@
 /**
- * Builds the welcome message payload for a new member.
+ * Construye el mensaje de bienvenida para un miembro nuevo.
  */
 const phrases = require('../config/welcomePhrases');
 const { pickRandom } = require('../utils/random');
@@ -15,7 +15,7 @@ function buildWelcomeMessage(member) {
 
   return {
     content,
-    // Only ping the new member, never @everyone or roles even if a phrase contained them.
+    // Solo notifica al miembro nuevo, nunca a @everyone ni a roles aunque una frase los incluya.
     allowedMentions: { users: [member.id] },
   };
 }

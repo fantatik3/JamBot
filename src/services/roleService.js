@@ -1,11 +1,11 @@
 /**
- * All role mutations go through here so permission/hierarchy checks live in one place.
+ * Todos los cambios de roles pasan por aquí para que las comprobaciones de permisos y jerarquía estén en un solo sitio.
  */
 const { UserFacingError } = require('../utils/errors');
 const logger = require('../utils/logger');
 
 /**
- * Throws a UserFacingError if the bot cannot assign/remove `role`.
+ * Lanza un UserFacingError si el bot no puede asignar o quitar `role`.
  * @param {import('discord.js').Role} role
  */
 function assertManageable(role) {
@@ -26,8 +26,8 @@ function assertManageable(role) {
 }
 
 /**
- * Throws if `actor` (a moderator) is not allowed to hand out `role`.
- * Prevents mods from granting roles equal to or above their own.
+ * Lanza un error si `actor` (un moderador) no puede repartir `role`.
+ * Evita que los moderadores concedan roles iguales o superiores al suyo.
  * @param {import('discord.js').GuildMember} actor
  * @param {import('discord.js').Role} role
  */
@@ -41,7 +41,7 @@ function assertActorOutranks(actor, role) {
 }
 
 /**
- * @returns {Promise<boolean>} true if the role was added, false if the member already had it.
+ * @returns {Promise<boolean>} true si se añadió el rol, false si el miembro ya lo tenía.
  */
 async function addRole(member, role, reason = 'Rol asignado por el bot') {
   assertManageable(role);
@@ -52,7 +52,7 @@ async function addRole(member, role, reason = 'Rol asignado por el bot') {
 }
 
 /**
- * @returns {Promise<boolean>} true if the role was removed, false if the member did not have it.
+ * @returns {Promise<boolean>} true si se quitó el rol, false si el miembro no lo tenía.
  */
 async function removeRole(member, role, reason = 'Rol quitado por el bot') {
   assertManageable(role);
@@ -63,7 +63,7 @@ async function removeRole(member, role, reason = 'Rol quitado por el bot') {
 }
 
 /**
- * Adds the role if the member lacks it, removes it otherwise.
+ * Añade el rol si el miembro no lo tiene y lo quita en caso contrario.
  * @returns {Promise<{ added: boolean }>}
  */
 async function toggleRole(member, role, reason = 'Rol cambiado desde el menú de roles') {

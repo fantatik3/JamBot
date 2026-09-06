@@ -1,6 +1,6 @@
 /**
- * Central configuration.
- * Loads `.env`, validates required values, and exposes a single frozen config object.
+ * Configuración central.
+ * Carga `.env`, valida los valores obligatorios y expone un único objeto de configuración inmutable.
  */
 require('dotenv').config();
 
@@ -14,7 +14,7 @@ if (missing.length > 0) {
   );
 }
 
-/** Reads an integer env var with a default and optional bounds. */
+/** Lee una variable de entorno entera, con valor por defecto y límites opcionales. */
 function intEnv(name, fallback, { min = -Infinity, max = Infinity } = {}) {
   const raw = process.env[name];
   if (raw === undefined || raw === '') return fallback;
@@ -25,14 +25,14 @@ function intEnv(name, fallback, { min = -Infinity, max = Infinity } = {}) {
   return value;
 }
 
-/** Reads a boolean env var: true / 1 / yes / on count as true. */
+/** Lee una variable de entorno booleana: true / 1 / yes / on cuentan como verdadero. */
 function boolEnv(name, fallback) {
   const raw = process.env[name];
   if (raw === undefined || raw === '') return fallback;
   return ['true', '1', 'yes', 'on'].includes(raw.trim().toLowerCase());
 }
 
-/** Parses "10-23" into { start: 10, end: 23 } (hours, local time, end exclusive). */
+/** Convierte "10-23" en { start: 10, end: 23 } (horas, hora local, fin exclusivo). */
 function hoursEnv(name, fallback) {
   const raw = process.env[name] || fallback;
   const match = /^(\d{1,2})\s*-\s*(\d{1,2})$/.exec(raw);

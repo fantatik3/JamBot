@@ -1,12 +1,12 @@
 /**
- * Role-selection menus: an embed listing roles plus one toggle button per role.
+ * Menús de selección de roles: un embed con la lista de roles y un botón de alternar por rol.
  *
- * Flow:
- *   1. `/rolemenu create` remembers where the menu should go (rememberSetup) and shows
- *      the admin a native Discord role picker.
- *   2. When the admin picks roles, the handler validates them (validateMenuRoles),
- *      builds the message (buildRoleMenu) and posts it.
- *   3. Members click buttons whose customId is `rolemenu:toggle:<roleId>`.
+ * Flujo:
+ *   1. `/rolemenu create` recuerda dónde debe ir el menú (rememberSetup) y muestra
+ *      al administrador el selector de roles nativo de Discord.
+ *   2. Cuando el administrador elige roles, el manejador los valida (validateMenuRoles),
+ *      construye el mensaje (buildRoleMenu) y lo publica.
+ *   3. Los miembros pulsan botones cuyo customId es `rolemenu:toggle:<roleId>`.
  */
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { chunk } = require('../utils/random');
@@ -26,14 +26,14 @@ const DEFAULT_TITLE = 'Elige tus roles';
 const DEFAULT_DESCRIPTION = 'Pulsa un botón para activar un rol. Vuelve a pulsarlo para quitártelo.';
 const MENU_COLOR = 0x5865f2;
 
-/** Pending `/rolemenu create` sessions, keyed by `guildId:userId`. */
+/** Sesiones pendientes de `/rolemenu create`, indexadas por `guildId:userId`. */
 const pendingSetups = new Map();
 
 function setupKey(guildId, userId) {
   return `${guildId}:${userId}`;
 }
 
-/** Stores where and how the next menu for this admin should be posted. */
+/** Guarda dónde y cómo debe publicarse el próximo menú de este administrador. */
 function rememberSetup(guildId, userId, { channelId, title, description }) {
   pendingSetups.set(setupKey(guildId, userId), {
     channelId,
@@ -43,7 +43,7 @@ function rememberSetup(guildId, userId, { channelId, title, description }) {
   });
 }
 
-/** Retrieves and clears the pending setup, or returns null if none / expired. */
+/** Recupera y borra la configuración pendiente, o devuelve null si no existe o caducó. */
 function takeSetup(guildId, userId) {
   const key = setupKey(guildId, userId);
   const setup = pendingSetups.get(key);
@@ -53,8 +53,8 @@ function takeSetup(guildId, userId) {
 }
 
 /**
- * Filters the roles an admin picked down to the ones that can safely be self-assigned.
- * @param {import('discord.js').GuildMember} actor  The admin creating the menu.
+ * Filtra los roles elegidos por un administrador y deja solo los que se pueden autoasignar con seguridad.
+ * @param {import('discord.js').GuildMember} actor  El administrador que crea el menú.
  * @param {import('discord.js').Role[]} roles
  * @returns {{ valid: import('discord.js').Role[], problems: string[] }}
  */

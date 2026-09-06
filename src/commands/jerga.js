@@ -1,13 +1,13 @@
 /**
- * /jerga start [duration]  -> start a round now (in the game channel)
- * /jerga next              -> close the current phase (submissions -> voting -> results)
- * /jerga cancel            -> drop the active round without points
- * /jerga scores            -> leaderboard
- * /jerga glossary          -> latest winning explanations
- * /jerga schedule          -> today's automatic rounds
- * /jerga tutorial          -> public "how to play" post
+ * /jerga start [duration]  -> empieza una ronda ahora (en el canal del juego)
+ * /jerga next              -> cierra la fase actual (envíos -> votación -> resultados)
+ * /jerga cancel            -> cancela la ronda activa sin repartir puntos
+ * /jerga scores            -> clasificación
+ * /jerga glossary          -> últimas explicaciones ganadoras
+ * /jerga schedule          -> rondas automáticas de hoy
+ * /jerga tutorial          -> publica las instrucciones para todo el mundo
  *
- * When JERGA_CHANNEL_ID is set, every subcommand only works in that channel.
+ * Si JERGA_CHANNEL_ID está definido, todos los subcomandos funcionan solo en ese canal.
  */
 const { SlashCommandBuilder, MessageFlags, InteractionContextType } = require('discord.js');
 const config = require('../config');

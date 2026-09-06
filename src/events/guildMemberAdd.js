@@ -1,6 +1,6 @@
 /**
- * Welcomes new members and (optionally) hands out the auto-role.
- * Requires the Server Members Intent to be enabled in the Developer Portal.
+ * Da la bienvenida a los miembros nuevos y (opcionalmente) les asigna el rol automático.
+ * Requiere tener activado el Server Members Intent en el Portal de desarrolladores.
  */
 const { Events, PermissionFlagsBits } = require('discord.js');
 const config = require('../config');

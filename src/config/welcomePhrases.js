@@ -1,9 +1,9 @@
 /**
- * Welcome phrases. One is picked at random for each new member.
+ * Frases de bienvenida. Se elige una al azar para cada miembro nuevo.
  *
- * Placeholders:
- *   {user}   -> mention of the new member (this is what pings them)
- *   {server} -> the server name
+ * Marcadores:
+ *   {user}   -> mención del miembro nuevo (esto es lo que le notifica)
+ *   {server} -> el nombre del servidor
  */
 module.exports = [
   "{user} ha aparecido en el punto de spawn. Una mente más para desatascar a la gente.",

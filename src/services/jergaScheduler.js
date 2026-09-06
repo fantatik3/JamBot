@@ -1,11 +1,11 @@
 /**
- * Starts "Mata la jerga" rounds automatically at random times each day.
+ * Inicia rondas de "Mata la jerga" automáticamente a horas aleatorias cada día.
  *
- * Every day the scheduler picks JERGA_ROUNDS_PER_DAY random start times inside
- * JERGA_ACTIVE_HOURS (local time of the machine running the bot), spread out so rounds
- * do not overlap. The plan is saved in the store, so a restart keeps the same times.
- * Rounds are posted in JERGA_CHANNEL_ID with the bot as host; anyone with Manage
- * Messages can still advance or cancel them by hand.
+ * Cada día el planificador sortea JERGA_ROUNDS_PER_DAY horas de inicio dentro de
+ * JERGA_ACTIVE_HOURS (hora local de la máquina que ejecuta el bot), repartidas para que
+ * las rondas no se solapen. El plan se guarda en el almacén, así que un reinicio conserva las horas.
+ * Las rondas se publican en JERGA_CHANNEL_ID con el bot como anfitrión; quien tenga
+ * Gestionar mensajes puede adelantarlas o cancelarlas a mano.
  */
 const config = require('../config');
 const store = require('../utils/store');
@@ -13,7 +13,7 @@ const logger = require('../utils/logger');
 const jerga = require('./jergaService');
 
 const MINUTE = 60 * 1000;
-/** A missed start (bot was down) still fires if it is at most this late. */
+/** Un inicio perdido (el bot estaba apagado) se ejecuta igualmente si llega con este retraso como máximo. */
 const GRACE_MS = 15 * MINUTE;
 
 let client = null;
@@ -37,8 +37,8 @@ function roundLengthMs() {
 }
 
 /**
- * Picks random start times for `date`, one per equal slot of the active window,
- * never earlier than `now` and leaving room for the round to finish inside the window.
+ * Sortea horas de inicio para `date`, una por cada franja igual de la ventana activa,
+ * nunca antes de `now` y dejando margen para que la ronda termine dentro de la ventana.
  */
 function planDay(date, now = Date.now()) {
   const { start, end } = config.jergaActiveHours;
@@ -47,13 +47,13 @@ function planDay(date, now = Date.now()) {
   const latest = atHour(date, end) - roundMs;
   if (config.jergaRoundsPerDay <= 0 || latest < earliest) return [];
 
-  // Only as many rounds as fit back-to-back between the first and last possible start.
+  // Solo tantas rondas como quepan seguidas entre el primer y el último inicio posible.
   const available = latest - earliest;
   const fits = Math.floor(available / roundMs) + 1;
   const count = Math.min(config.jergaRoundsPerDay, fits);
 
-  // One random start per slot; slots are at least a round long, so rounds never overlap,
-  // and the last slot reaches `latest` so the whole window is used.
+  // Un inicio aleatorio por franja; cada franja dura al menos una ronda, así que nunca se solapan,
+  // y la última franja llega hasta `latest` para aprovechar toda la ventana.
   const slot = (available + roundMs) / count;
   const spread = slot - roundMs;
   const times = [];
@@ -63,13 +63,13 @@ function planDay(date, now = Date.now()) {
   return times;
 }
 
-/** Identifies the settings a plan was drawn with, so changing .env re-draws today's plan. */
+/** Identifica la configuración con la que se sorteó un plan, para volver a sortear el de hoy si cambia .env. */
 function settingsSignature() {
   const { start, end } = config.jergaActiveHours;
   return [config.jergaRoundsPerDay, start, end, config.jergaSubmitMinutes, config.jergaVoteMinutes].join('|');
 }
 
-/** Returns today's plan, generating it if the day or the settings changed. */
+/** Devuelve el plan de hoy, generándolo si cambió el día o la configuración. */
 function ensurePlan(now = Date.now()) {
   const plan = store.section('jergaSchedule');
   const today = dayKey(new Date(now));
@@ -86,7 +86,7 @@ function ensurePlan(now = Date.now()) {
   return plan;
 }
 
-/** Upcoming start times for today that have not fired yet. */
+/** Horas de inicio de hoy que todavía no se han ejecutado. */
 function upcoming(now = Date.now()) {
   const plan = ensurePlan(now);
   return plan.times.filter((t) => !plan.done.includes(t) && t >= now).sort((a, b) => a - b);
@@ -106,7 +106,7 @@ function armNext() {
     return next;
   }
 
-  // Nothing left today: wake up at the start of tomorrow's window and plan again.
+  // No queda nada hoy: despierta al inicio de la ventana de mañana y vuelve a planificar.
   const tomorrow = new Date(now);
   tomorrow.setDate(tomorrow.getDate() + 1);
   const wake = atHour(tomorrow, config.jergaActiveHours.start);
@@ -114,7 +114,7 @@ function armNext() {
   return null;
 }
 
-/** Posts a bot-hosted round in the game channel, unless one is already running. */
+/** Publica una ronda con el bot como anfitrión en el canal del juego, salvo que ya haya una en marcha. */
 async function startAutomaticRound(reason) {
   try {
     const channel = await client.channels.fetch(config.jergaChannelId);
@@ -150,7 +150,7 @@ async function fire(time) {
   if (next) logger.info(`Next automatic jerga round at ${new Date(next).toLocaleString()}`);
 }
 
-/** Call once the client is ready. */
+/** Llamar una vez que el cliente esté listo. */
 function start(discordClient) {
   client = discordClient;
 

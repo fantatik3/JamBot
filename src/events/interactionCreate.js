@@ -1,9 +1,9 @@
 /**
- * Routes every interaction to the right place:
- *   slash command  -> client.commands
- *   button / menu  -> client.componentHandlers (by customId prefix)
- *   modal submit   -> client.componentHandlers (same prefix convention)
- * and turns errors into a friendly ephemeral reply.
+ * Envía cada interacción a su sitio:
+ *   comando de barra -> client.commands
+ *   botón / menú     -> client.componentHandlers (por el prefijo del customId)
+ *   envío de modal   -> client.componentHandlers (misma convención de prefijo)
+ * y convierte los errores en una respuesta efímera amable.
  */
 const { Events, MessageFlags } = require('discord.js');
 const logger = require('../utils/logger');

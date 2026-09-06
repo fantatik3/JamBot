@@ -1,4 +1,4 @@
-/** Returns a random element of a non-empty array. */
+/** Devuelve un elemento aleatorio de un array no vacío. */
 function pickRandom(list) {
   if (!Array.isArray(list) || list.length === 0) {
     throw new Error('pickRandom() requires a non-empty array');
@@ -6,7 +6,7 @@ function pickRandom(list) {
   return list[Math.floor(Math.random() * list.length)];
 }
 
-/** Splits an array into chunks of `size`. */
+/** Divide un array en trozos de tamaño `size`. */
 function chunk(list, size) {
   const result = [];
   for (let i = 0; i < list.length; i += size) {
@@ -15,7 +15,7 @@ function chunk(list, size) {
   return result;
 }
 
-/** Returns a shuffled copy of the array (Fisher-Yates). */
+/** Devuelve una copia barajada del array (Fisher-Yates). */
 function shuffle(list) {
   const copy = [...list];
   for (let i = copy.length - 1; i > 0; i -= 1) {

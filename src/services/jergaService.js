@@ -1,13 +1,13 @@
 /**
- * "Mata la jerga": explain a game-dev term without using the banned words.
+ * "Mata la jerga": explica un término de desarrollo de videojuegos sin usar las palabras prohibidas.
  *
- * Round lifecycle (one active round per guild):
- *   submitting -> members send explanations through a modal
- *   voting     -> explanations are shown anonymously with numbered vote buttons
- *   finished   -> winner announced, points awarded, explanation saved to the glossary
+ * Ciclo de vida de una ronda (una ronda activa por servidor):
+ *   submitting -> los miembros envían explicaciones mediante un modal
+ *   voting     -> las explicaciones se muestran de forma anónima con botones de voto numerados
+ *   finished   -> se anuncia la ganadora, se reparten puntos y la explicación va al glosario
  *
- * Phases advance on a timer or when the host presses the button. State lives in the
- * JSON store so a restart keeps rounds and scores; timers are re-armed by resume().
+ * Las fases avanzan por temporizador o cuando el anfitrión pulsa el botón. El estado vive en el
+ * almacén JSON, así que un reinicio conserva rondas y puntos; resume() vuelve a armar los temporizadores.
  */
 const {
   EmbedBuilder,
@@ -29,11 +29,11 @@ const { findForbiddenWords, chunkLines, truncate } = require('../utils/text');
 
 const PREFIX = 'jerga';
 const ACTIONS = Object.freeze({
-  SUBMIT: 'submit', // button: open the explanation modal
-  MODAL: 'modal', // modal submit: explanation text
-  OPEN_VOTE: 'openvote', // button (host): close submissions, start voting
-  VOTE: 'vote', // button: vote for explanation <index>
-  FINISH: 'finish', // button (host): close voting, announce results
+  SUBMIT: 'submit', // botón: abre el modal de explicación
+  MODAL: 'modal', // envío de modal: texto de la explicación
+  OPEN_VOTE: 'openvote', // botón (anfitrión): cierra envíos, abre votación
+  VOTE: 'vote', // botón: vota la explicación <index>
+  FINISH: 'finish', // botón (anfitrión): cierra votación, anuncia resultados
 });
 const MODAL_FIELD = 'explanation';
 
@@ -48,10 +48,10 @@ const POINTS = Object.freeze({ WIN: 3, PARTICIPATE: 1 });
 const COLOR = 0xeb459e;
 
 let client = null;
-/** Active setTimeout handles, keyed by round id. */
+/** Temporizadores setTimeout activos, indexados por id de ronda. */
 const timers = new Map();
 
-// ── Store access ─────────────────────────────────────────────────────────
+// ── Acceso al almacén ────────────────────────────────────────────────────
 
 function guildData(guildId) {
   const section = store.section('jerga');
@@ -85,7 +85,7 @@ function getGlossary(guildId) {
   return [...guildData(guildId).glossary].reverse();
 }
 
-// ── Helpers ──────────────────────────────────────────────────────────────
+// ── Utilidades ───────────────────────────────────────────────────────────
 
 function messageLink(round, messageId = round.messageId) {
   return `https://discord.com/channels/${round.guildId}/${round.channelId}/${messageId}`;
@@ -110,7 +110,7 @@ function pickTerm(data) {
   return chosen;
 }
 
-/** Whether `member` may advance or cancel the round. */
+/** Si `member` puede adelantar o cancelar la ronda. */
 function canManage(round, member) {
   return round.hostId === member.id || member.permissions.has(PermissionFlagsBits.ManageMessages);
 }
@@ -139,7 +139,7 @@ async function editMessage(round, messageId, payload) {
   }
 }
 
-// ── Message builders ─────────────────────────────────────────────────────
+// ── Constructores de mensajes ────────────────────────────────────────────
 
 function buildRoundMessage(round, { closed = false, note = null } = {}) {
   const banned = round.banned.map((word) => `~~${word}~~`).join('   ');
@@ -287,7 +287,7 @@ function buildGlossaryMessage(guildId) {
 }
 
 /**
- * Public "how to play" embed.
+ * Embed público con las instrucciones del juego.
  * @param {{ channelId?: string|null, roundsPerDay?: number, submitMinutes: number, voteMinutes: number }} options
  */
 function buildTutorialMessage({ channelId = null, roundsPerDay = 0, submitMinutes, voteMinutes }) {
@@ -351,7 +351,7 @@ function buildTutorialMessage({ channelId = null, roundsPerDay = 0, submitMinute
   return { embeds: [embed], allowedMentions: { parse: [] } };
 }
 
-// ── Timers ───────────────────────────────────────────────────────────────
+// ── Temporizadores ───────────────────────────────────────────────────────
 
 function clearTimer(roundId) {
   const handle = timers.get(roundId);
@@ -380,7 +380,7 @@ async function onDeadline(guildId, roundId) {
   }
 }
 
-/** Binds the client and re-arms timers for rounds that survived a restart. */
+/** Vincula el cliente y vuelve a armar los temporizadores de las rondas que sobrevivieron a un reinicio. */
 function resume(discordClient) {
   client = discordClient;
   let resumed = 0;
@@ -393,7 +393,7 @@ function resume(discordClient) {
   if (resumed > 0) logger.info(`Resumed ${resumed} jerga round(s).`);
 }
 
-// ── Round lifecycle ──────────────────────────────────────────────────────
+// ── Ciclo de vida de la ronda ────────────────────────────────────────────
 
 async function startRound({ guild, channel, hostId, submitMinutes, voteMinutes }) {
   const data = guildData(guild.id);
@@ -438,7 +438,7 @@ async function startRound({ guild, channel, hostId, submitMinutes, voteMinutes }
   return round;
 }
 
-/** Validates and stores a member's explanation. */
+/** Valida y guarda la explicación de un miembro. */
 async function submit(round, userId, text) {
   if (round.phase !== PHASE.SUBMITTING) {
     throw new UserFacingError('Los envíos de esta ronda ya están cerrados.');
@@ -470,7 +470,7 @@ async function submit(round, userId, text) {
   return { replaced };
 }
 
-/** Closes submissions. Cancels if nobody played, finishes directly if only one did. */
+/** Cierra los envíos. Cancela si nadie participó y termina directamente si solo participó una persona. */
 async function openVoting(round) {
   if (round.phase !== PHASE.SUBMITTING) return { outcome: round.phase };
   clearTimer(round.id);
@@ -483,7 +483,7 @@ async function openVoting(round) {
 
   round.order = shuffle(Object.keys(round.submissions));
   round.phase = PHASE.VOTING;
-  // `durationMs` is the field name used by rounds saved before submit/vote windows were split.
+  // `durationMs` es el nombre del campo en rondas guardadas antes de separar las ventanas de envío y votación.
   round.deadline = Date.now() + (round.voteMs ?? round.submitMs ?? round.durationMs);
   store.save();
 
@@ -503,7 +503,7 @@ async function openVoting(round) {
   return { outcome: 'voting' };
 }
 
-/** Records (or changes) a member's vote. */
+/** Registra (o cambia) el voto de un miembro. */
 async function vote(round, userId, index) {
   if (round.phase !== PHASE.VOTING) {
     throw new UserFacingError('La votación de esta ronda no está abierta.');
@@ -524,7 +524,7 @@ async function vote(round, userId, index) {
   return { changed: previous !== undefined && previous !== index };
 }
 
-/** Tallies votes, awards points, saves the winner to the glossary and announces results. */
+/** Cuenta los votos, reparte puntos, guarda la ganadora en el glosario y anuncia los resultados. */
 async function finishRound(round) {
   if (round.phase === PHASE.FINISHED) return { winners: [] };
   clearTimer(round.id);
@@ -537,7 +537,7 @@ async function finishRound(round) {
     votes: Object.values(round.votes).filter((v) => v === index).length,
   }));
   const top = Math.max(...tally.map((entry) => entry.votes));
-  // Most votes wins (ties share). If nobody voted, luck picks one so every round has a winner.
+  // Gana la más votada (los empates se reparten). Si nadie votó, la suerte elige una para que toda ronda tenga ganadora.
   const byLuck = top === 0 && tally.length > 1;
   const winners = byLuck ? [pickRandom(tally)] : tally.filter((entry) => entry.votes === top);
 
@@ -568,7 +568,7 @@ async function finishRound(round) {
   return { winners };
 }
 
-/** Drops the round without awarding points. */
+/** Descarta la ronda sin repartir puntos. */
 async function cancelRound(round, reason = 'Ronda cancelada.') {
   clearTimer(round.id);
   const data = guildData(round.guildId);

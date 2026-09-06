@@ -1,10 +1,10 @@
 /**
- * Registers slash commands with Discord. Run with `npm run deploy`.
+ * Registra los comandos de barra en Discord. Se ejecuta con `npm run deploy`.
  *
- * - If GUILD_ID is set, commands are registered to that server only (instant).
- * - Otherwise they are registered globally (can take up to an hour to appear).
+ * - Si GUILD_ID está definido, los comandos se registran solo en ese servidor (al instante).
+ * - Si no, se registran de forma global (pueden tardar hasta una hora en aparecer).
  *
- * Re-run this whenever you add, remove, or change a command definition.
+ * Vuelve a ejecutarlo cada vez que añadas, quites o cambies la definición de un comando.
  */
 const { REST, Routes } = require('discord.js');
 const config = require('./config');

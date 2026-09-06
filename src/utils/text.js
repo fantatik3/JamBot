@@ -1,6 +1,6 @@
 /**
- * Joins lines into as few strings as possible without any of them exceeding `maxLength`.
- * Used to split long lists across several Discord messages (2000-char limit).
+ * Une líneas en el menor número posible de cadenas sin que ninguna supere `maxLength`.
+ * Sirve para repartir listas largas en varios mensajes de Discord (límite de 2000 caracteres).
  */
 function chunkLines(lines, maxLength) {
   const chunks = [];
@@ -20,7 +20,7 @@ function chunkLines(lines, maxLength) {
   return chunks;
 }
 
-/** Lowercases and strips accents so "Colisión" and "colision" compare equal. */
+/** Pasa a minúsculas y quita los acentos para que "Colisión" y "colision" sean iguales. */
 function normalize(text) {
   return text
     .normalize('NFD')
@@ -33,8 +33,8 @@ function escapeRegExp(text) {
 }
 
 /**
- * Returns the entries of `words` that appear in `text` as whole words,
- * ignoring case, accents and simple Spanish plurals (-s / -es).
+ * Devuelve las entradas de `words` que aparecen en `text` como palabras completas,
+ * ignorando mayúsculas, acentos y plurales simples del español (-s / -es).
  */
 function findForbiddenWords(text, words) {
   const haystack = normalize(text);
@@ -53,7 +53,7 @@ function findForbiddenWords(text, words) {
   return hits;
 }
 
-/** Truncates to `max` characters, adding an ellipsis when cut. */
+/** Recorta a `max` caracteres y añade puntos suspensivos si corta. */
 function truncate(text, max) {
   return text.length <= max ? text : `${text.slice(0, max - 1)}…`;
 }

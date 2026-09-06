@@ -1,7 +1,7 @@
 /**
- * Terms for "Mata la jerga". Players must explain `term` without using any of the
- * `banned` words (nor the term itself). Matching ignores case, accents and simple plurals.
- * Keep banned words short and common: the point is forcing plain-language explanations.
+ * Términos de "Mata la jerga". Hay que explicar `term` sin usar ninguna de las
+ * palabras `banned` (ni el propio término). La comprobación ignora mayúsculas, acentos y plurales simples.
+ * Usa palabras prohibidas cortas y comunes: la gracia es obligar a explicar en lenguaje llano.
  */
 module.exports = [
   // ── Programación: conceptos básicos ──────────────────────────────────

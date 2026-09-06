@@ -1,7 +1,7 @@
 /**
  * /rolemenu create [channel] [title] [description]
- * Shows the admin a role picker; the chosen roles become a self-assign button menu
- * posted in the target channel. The picker is handled in interactions/roleMenu.js.
+ * Muestra al administrador un selector de roles; los roles elegidos se convierten en un menú de
+ * botones autoasignables publicado en el canal elegido. El selector se gestiona en interactions/roleMenu.js.
  */
 const {
   SlashCommandBuilder,

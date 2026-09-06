@@ -1,10 +1,10 @@
 /**
- * Buttons and modal for "Mata la jerga". CustomIds:
- *   jerga:submit:<roundId>        button  -> open the explanation modal
- *   jerga:modal:<roundId>         modal   -> explanation submitted
- *   jerga:openvote:<roundId>      button  -> host closes submissions
- *   jerga:vote:<roundId>:<index>  button  -> vote for an explanation
- *   jerga:finish:<roundId>        button  -> host closes voting
+ * Botones y modal de "Mata la jerga". CustomIds:
+ *   jerga:submit:<roundId>        botón   -> abre el modal de explicación
+ *   jerga:modal:<roundId>         modal   -> explicación enviada
+ *   jerga:openvote:<roundId>      botón   -> el anfitrión cierra los envíos
+ *   jerga:vote:<roundId>:<index>  botón   -> vota una explicación
+ *   jerga:finish:<roundId>        botón   -> el anfitrión cierra la votación
  */
 const { MessageFlags } = require('discord.js');
 const jerga = require('../services/jergaService');
