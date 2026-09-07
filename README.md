@@ -37,6 +37,7 @@ src/
 │   ├── nombralo/             # Nómbralo: index.js + items.js
 │   ├── scope/                # Scope it: index.js + features.js
 │   ├── bugs/                 # Caza el bug: index.js + snippets/ (un archivo por lenguaje)
+│   ├── smells/               # Huele mal: index.js + snippets/ (un archivo por lenguaje)
 │   └── trivia/               # Trivia por disciplina: index.js + questions/ (un archivo por disciplina)
 ├── commands/                 # Comandos de barra
 │   ├── games.js              # Un comando por juego registrado
@@ -175,6 +176,7 @@ día, rotando entre juegos, cada una en su canal, con una ronda por canal como m
 | Nómbralo | `/nombralo` | Votación | Proponer el nombre más claro para una variable, función, clase o asset descrito. 150 casos. |
 | Scope it | `/scope` | Juez | Estimar las horas que lleva una tarea de jam; gana quien más se acerca a la mediana del grupo. 120 tareas. |
 | Caza el bug | `/bugs` | Votación | Encontrar el fallo escondido en un fragmento corto de C#, GDScript, JavaScript, C++, GLSL o Python. La solución se revela con los resultados. 188 fragmentos, al menos 30 por lenguaje. |
+| Huele mal | `/smells` | Votación | Leer un fragmento que funciona pero está mal escrito y decir qué cambiarías y por qué. Lo que cambiaría el bot se revela con los resultados. 180 fragmentos, 30 por lenguaje. |
 | Trivia por disciplina | `/trivia` | Opciones | Una pregunta con cuatro opciones de programación, arte, audio, diseño, narrativa o producción, con explicación. 202 preguntas. |
 
 Todos los juegos tienen los mismos subcomandos: `start`, `next`, `cancel`, `scores`, `glossary`, `schedule`,

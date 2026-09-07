@@ -37,6 +37,7 @@ src/
 │   ├── nombralo/             # Nómbralo: index.js + items.js
 │   ├── scope/                # Scope it: index.js + features.js
 │   ├── bugs/                 # Caza el bug: index.js + snippets/ (one file per language)
+│   ├── smells/               # Huele mal: index.js + snippets/ (one file per language)
 │   └── trivia/               # Trivia por disciplina: index.js + questions/ (one file per discipline)
 ├── commands/                 # Slash commands
 │   ├── games.js              # One command per registered game
@@ -174,6 +175,7 @@ between games, each in its own channel, with at most one round per channel at a 
 | Nómbralo | `/nombralo` | Vote | Propose the clearest name for a described variable, function, class or asset. 150 items. |
 | Scope it | `/scope` | Judge | Estimate the hours a jam task takes; closest to the group median wins. 120 tasks. |
 | Caza el bug | `/bugs` | Vote | Find the planted bug in a short snippet of C#, GDScript, JavaScript, C++, GLSL or Python. The fix is revealed with the results. 188 snippets, at least 30 per language. |
+| Huele mal | `/smells` | Vote | Read a snippet that works but is badly written and say what you would change and why. The suggested change is revealed with the results. 180 snippets, 30 per language. |
 | Trivia por disciplina | `/trivia` | Choice | A four-option question about programming, art, audio, design, narrative or production, with an explanation. 202 questions. |
 
 Every game has the same subcommands: `start`, `next`, `cancel`, `scores`, `glossary`, `schedule`, `tutorial` and

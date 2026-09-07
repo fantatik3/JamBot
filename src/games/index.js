@@ -9,6 +9,7 @@ const games = [
   require('./nombralo'),
   require('./scope'),
   require('./bugs'),
+  require('./smells'),
   require('./trivia'),
 ];
 

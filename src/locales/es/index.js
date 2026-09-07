@@ -10,6 +10,7 @@ module.exports = {
     nombralo: require('./games/nombralo'),
     scope: require('./games/scope'),
     bugs: require('./games/bugs'),
+    smells: require('./games/smells'),
     trivia: require('./games/trivia'),
   },
 };
