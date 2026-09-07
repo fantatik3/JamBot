@@ -225,8 +225,12 @@ async function onDeadline(gameId, guildId, roundId) {
   }
 }
 
-/** Vincula el cliente y los juegos, y vuelve a armar los temporizadores de las rondas activas. */
-function resume(discordClient, games) {
+/**
+ * Vincula el cliente y los juegos, cierra las rondas que vencieron con el bot apagado y vuelve a
+ * armar los temporizadores del resto. Se espera a que las vencidas cierren antes de devolver el
+ * control, para que el planificador vea el estado real al decidir qué rondas de arranque publicar.
+ */
+async function resume(discordClient, games) {
   client = discordClient;
   gamesById = new Map(games.map((game) => [game.id, game]));
 
@@ -237,6 +241,7 @@ function resume(discordClient, games) {
   }
 
   let resumed = 0;
+  const overdue = [];
   for (const [guildId, perGame] of Object.entries(store.section('games'))) {
     for (const [gameId, data] of Object.entries(perGame)) {
       if (!gamesById.has(gameId)) continue;
@@ -244,11 +249,13 @@ function resume(discordClient, games) {
       if (!round) continue;
       round.gameId ??= gameId;
       round.guildId ??= guildId;
-      armTimer(round);
+      if (round.deadline <= Date.now()) overdue.push(round);
+      else armTimer(round);
       resumed += 1;
     }
   }
   if (resumed > 0) logger.info(`Resumed ${resumed} game round(s).`);
+  for (const round of overdue) await onDeadline(round.gameId, round.guildId, round.id);
 }
 
 // ---- Ciclo de vida de la ronda ----

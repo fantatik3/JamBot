@@ -15,7 +15,7 @@ module.exports = {
       activities: [{ name: 'estado', type: ActivityType.Custom, state: 'Dando la bienvenida a los nuevos miembros' }],
       status: 'online',
     });
-    engine.resume(client, games);
+    await engine.resume(client, games);
     scheduler.start(client);
     logger.info(`Logged in as ${client.user.tag}, serving ${client.guilds.cache.size} guild(s).`);
   },
