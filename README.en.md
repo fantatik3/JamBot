@@ -5,8 +5,8 @@
 Discord bot for the Tranki Jam mentor server, built with [discord.js v14](https://discord.js.org/).
 
 It welcomes new members with a random phrase, lets people pick their own roles from a button menu,
-gives moderators a command to assign roles, and runs "Mata la jerga", a Taboo-style game where you
-explain a game dev term without using the banned words.
+gives moderators a command to assign roles, and runs six short educational games for mentors, from
+explaining a term without jargon to spotting a planted bug.
 
 Everything the bot says in Discord is in Spanish. Command names such as `/role` and `/rolemenu`
 stay in English.
@@ -20,10 +20,22 @@ src/
 ├── deploy-commands.js        # Registers slash commands with Discord (npm run deploy)
 ├── config/
 │   ├── index.js              # Loads and validates .env
-│   ├── jergaTerms.js         # Terms and banned words for Mata la jerga
 │   └── welcomePhrases.js     # Welcome phrases
-├── commands/                 # One file per slash command
-│   ├── jerga.js              # /jerga start|next|cancel|scores|glossary|schedule|tutorial
+├── games/                    # One folder per educational game
+│   ├── index.js              # Registry: list a game here and its command, buttons and rounds appear
+│   ├── engine/               # Shared round engine
+│   │   ├── roundEngine.js    # Submissions, voting, points, glossary, timers, storage
+│   │   ├── messages.js       # Embeds, buttons, modal and texts (games can override texts)
+│   │   ├── command.js        # Builds /<game> start|next|cancel|scores|glossary|schedule|tutorial
+│   │   └── interaction.js    # Builds the button and modal handler for a game
+│   ├── jerga/                # Mata la jerga: index.js + terms.js
+│   ├── triaje/               # Triaje: index.js + scenarios.js
+│   ├── nombralo/             # Nómbralo: index.js + items.js
+│   ├── scope/                # Scope it: index.js + features.js
+│   ├── bugs/                 # Caza el bug: index.js + snippets/ (one file per language)
+│   └── trivia/               # Trivia por disciplina: index.js + questions/ (one file per discipline)
+├── commands/                 # Slash commands
+│   ├── games.js              # One command per registered game
 │   ├── phrases.js            # /phrases                         (role in PREVIEW_ROLE_ID)
 │   ├── ping.js               # /ping
 │   ├── role.js               # /role add|remove <user> <role>   (Manage Roles)
@@ -34,15 +46,14 @@ src/
 │   ├── guildMemberAdd.js     # Welcome message and auto-role
 │   └── interactionCreate.js  # Routes commands, buttons and modals
 ├── interactions/             # Button, select menu and modal handlers, routed by customId prefix
-│   ├── jerga.js              # Buttons and modal for Mata la jerga
+│   ├── games.js              # One handler per registered game
 │   └── roleMenu.js           # rolemenu:setup (role picker) and rolemenu:toggle:<roleId>
 ├── handlers/                 # Loaders for commands, events and component handlers
 │   ├── commandHandler.js
 │   ├── eventHandler.js
 │   └── componentHandler.js
 ├── services/                 # Logic shared by commands and events
-│   ├── jergaScheduler.js     # Starts jerga rounds automatically at random times
-│   ├── jergaService.js       # Mata la jerga rounds, voting, scores, glossary
+│   ├── gameScheduler.js      # Starts game rounds automatically, rotating between games
 │   ├── roleMenuService.js    # Validates picked roles, builds the menu
 │   ├── roleService.js        # Add, remove and toggle roles with hierarchy checks
 │   └── welcomeService.js     # Builds the welcome message
@@ -85,7 +96,8 @@ Enable Developer Mode in Discord (User Settings > Advanced). Then right-click to
 
 - your server, for `GUILD_ID`
 - the welcome channel, for `WELCOME_CHANNEL_ID`
-- the game channel, for `JERGA_CHANNEL_ID`
+- one channel per game, for `JERGA_CHANNEL_ID`, `TRIAJE_CHANNEL_ID`, `NOMBRALO_CHANNEL_ID`, `SCOPE_CHANNEL_ID`,
+  `BUGS_CHANNEL_ID` and `TRIVIA_CHANNEL_ID`
 - optionally a role, for `AUTO_ROLE_ID` and `PREVIEW_ROLE_ID`
 
 ### 4. Configure
@@ -123,50 +135,94 @@ the bot at a time: two copies with the same token answer the same interactions a
 | `/welcome preview` | Manage Server | Shows you a sample welcome message (only you see it). |
 | `/welcome send [user]` | Manage Server | Posts a real welcome message to the welcome channel. |
 | `/phrases` | Role in `PREVIEW_ROLE_ID` | Posts every welcome phrase, numbered, in the current channel (no pings). |
-| `/jerga start [duration]` | Everyone | Starts a round right now (only in the game channel). |
-| `/jerga schedule` | Everyone | Shows today's automatic rounds. |
-| `/jerga tutorial` | Everyone | Posts the how-to-play instructions publicly. |
-| `/jerga next` / `/jerga cancel` | Host or Manage Messages | Advance to voting/results, or drop the round. |
-| `/jerga scores` / `/jerga glossary` | Everyone | Leaderboard and the latest winning explanations. |
+| `/<game> start [duration]` | Everyone | Starts a round of that game right now (only in that game's channel). |
+| `/<game> next` / `/<game> cancel` | Host or Manage Messages | Advance to voting/results, or drop the round. |
+| `/<game> scores` / `/<game> glossary` | Everyone | Leaderboard with points from all games; latest winning answers of that game. |
+| `/<game> schedule` | Everyone | Today's automatic rounds. |
+| `/<game> tutorial` | Role in `PREVIEW_ROLE_ID` | Posts the how-to-play publicly in the current channel, whatever channel that is. |
+| `/<game> test [duration]` | Role in `PREVIEW_ROLE_ID` | Short test round in the current channel, whatever channel that is. |
 | `/ping` | Everyone | Latency check. |
+
+`<game>` is one of jerga, triaje, nombralo, scope, bugs or trivia.
 
 The role menu is a normal message. It stays in the channel and keeps working after restarts because
 each button carries the role id in its `customId`. To change the roles, run `/rolemenu create` again and
 delete the old message. You can post several menus, for example one per discipline. Only roles below
 both the bot and the admin creating the menu can be offered.
 
-## Mata la jerga
+## Games
 
-1. A round posts a term and five banned words. Members press "Enviar explicación" and write up to
-   280 characters. The bot rejects any text that uses the term or a banned word, ignoring case, accents
-   and plurals.
-2. When the timer ends, or the host presses "Cerrar envíos y votar", the explanations are shown
-   anonymously in random order with numbered vote buttons. You cannot vote for your own.
-3. When voting ends, the winner is announced and pinged. Winner +3 points, everyone who submitted +1.
-   Ties share the win, and if nobody voted one explanation is picked at random. The winning explanation
-   goes into the glossary.
+Every game runs on the same engine: a prompt is posted in that game's channel, people answer, the winner gets
+points and the winning answer goes to that game's glossary. Rounds start on their own during the day, rotating
+between games, each in its own channel, with at most one round per channel at a time. There are three shapes of round:
 
-Terms live in [`src/config/jergaTerms.js`](src/config/jergaTerms.js). Scores, glossary and in-progress
-rounds are saved to `data/store.json`, so a restart keeps them and resumes the timers.
+- Vote: answers go through a form, are shown anonymously in random order, and everyone votes for the best one.
+  Ties share the win; if nobody votes, one answer is picked at random.
+- Judge: answers go through a form and the game decides the winner by a rule, with no voting.
+- Choice: the question has lettered options and you press one. Whoever picks the right one wins.
+
+| Game | Command | Round | What you do |
+|---|---|---|---|
+| Mata la jerga | `/jerga` | Vote | Explain a game dev term without using five banned words. 255 terms. |
+| Triaje | `/triaje` | Vote | Read a vague message from someone stuck and list the three questions you would ask first. 130 cases. |
+| Nómbralo | `/nombralo` | Vote | Propose the clearest name for a described variable, function, class or asset. 150 items. |
+| Scope it | `/scope` | Judge | Estimate the hours a jam task takes; closest to the group median wins. 120 tasks. |
+| Caza el bug | `/bugs` | Vote | Find the planted bug in a short snippet of C#, GDScript, JavaScript, C++, GLSL or Python. The fix is revealed with the results. 188 snippets, at least 30 per language. |
+| Trivia por disciplina | `/trivia` | Choice | A four-option question about programming, art, audio, design, narrative or production, with an explanation. 202 questions. |
+
+Every game has the same subcommands: `start`, `next`, `cancel`, `scores`, `glossary`, `schedule`, `tutorial` and
+`test`. Points are shared across games, so `scores` shows one leaderboard; glossaries are per game. `tutorial` and
+`test` are reserved for the tester role and work in any channel.
+
+`/<game> test [duration]` is for the tester role set in `PREVIEW_ROLE_ID`. It starts a short round, 2 minutes per
+phase by default, in whatever channel you run it, so you can try a game outside its channel. `next` and
+`cancel` work on it as usual.
+
+Banks live in each game folder under `src/games/<id>/`. Scores, glossaries and in-progress rounds of every game
+are saved to `data/store.json`, so a restart keeps them and resumes the timers.
 
 ### Automatic rounds
 
-With `JERGA_CHANNEL_ID` set, the game only works in that channel and the bot starts rounds by itself.
+Each game has its own channel, set with `<ID>_CHANNEL_ID` (for example `TRIAJE_CHANNEL_ID`). A game only answers
+commands in its channel and its automatic rounds are posted there. `GAMES_CHANNEL_ID` is an optional fallback for
+games without their own variable; a game with neither has no automatic rounds and answers commands anywhere.
+Automatic rounds rotate between the games that have a channel.
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `JERGA_CHANNEL_ID` | (none) | Channel where rounds are posted. Unset means no automatic rounds and commands work anywhere. |
-| `JERGA_ROUNDS_PER_DAY` | 6 | Random start times per day. 0 disables automation. With 3-hour rounds, 8 is the most that fit in a day. |
-| `JERGA_ACTIVE_HOURS` | 0-24 | Rounds only start inside this window, in the local time of the machine running the bot. |
-| `JERGA_SUBMIT_MINUTES` | 120 | How long people have to send explanations. |
-| `JERGA_VOTE_MINUTES` | 60 | How long voting stays open. |
-| `JERGA_ROUND_ON_START` | false | Also post a round the moment the bot logs in. Useful while testing. |
+| `JERGA_CHANNEL_ID`, `TRIAJE_CHANNEL_ID`, ... | (none) | Channel of each game: commands work only there and its rounds are posted there. |
+| `GAMES_CHANNEL_ID` | (none) | Fallback channel for games without their own variable. |
+| `GAMES_ROUNDS_PER_DAY` | 6 | Random start times per day, shared by all games in rotation (6 means one round of each game). 0 disables automation. |
+| `GAMES_ACTIVE_HOURS` | 0-24 | Rounds only start inside this window, in the local time of the machine running the bot. |
+| `GAMES_SUBMIT_MINUTES` | 120 | How long people have to send explanations. |
+| `GAMES_VOTE_MINUTES` | 60 | How long voting stays open. |
+| `GAMES_ROUND_ON_START` | false | What to post when the bot logs in: `false` nothing, `true` one round (next game in rotation), `all` one round of every game in its channel. Useful for testing. |
+| `GAMES_ROUND_ON_START_MINUTES` | (none) | Minutes per phase for those startup rounds. Empty means the normal durations. |
 
 Each day the bot draws the start times once, spreads them so rounds never overlap, and saves the plan so a
 restart keeps it. Automatic rounds are hosted by the bot; anyone with Manage Messages can still use
 `/jerga next` or `/jerga cancel` on them.
 
 ## Extending
+
+### Adding a game
+
+Every game lives in its own folder under `src/games/` and shares the round engine: a prompt is posted,
+people answer through a form, answers are voted anonymously, the winner gets points and the answer goes
+to the glossary. To add one:
+
+1. Copy `src/games/jerga/` to `src/games/<id>/` and edit `index.js`: the id becomes the command name
+   (`/<id>`) and the customId prefix; `pickPrompt` chooses what to ask, `promptBody` renders it,
+   `validateAnswer` rejects bad answers, `tutorial` writes the instructions. Texts such as the answer
+   noun can be overridden in `strings`.
+2. Add it to the list in `src/games/index.js`.
+3. Run `npm run deploy`.
+
+The command, the buttons, the scheduler rotation, scores and glossary come for free. Set `mode: 'judge'` with a
+`pickWinners` function to skip voting and decide by a rule, or `mode: 'choice'` with `options` and `correct` in
+the prompt for lettered answers.
+
+### Other things
 
 To add a slash command, drop a file in `src/commands/` exporting `{ data, execute }` and run
 `npm run deploy`. Events go in `src/events/` exporting `{ name, once?, execute }`. Buttons, menus and

@@ -12,7 +12,7 @@ const client = createClient();
 
 client.commands = loadCommands();
 client.componentHandlers = loadComponentHandlers();
-loadEvents(client);
+loadEvents(client); 
 
 process.on("unhandledRejection", (reason) => {
   logger.error("Unhandled promise rejection:", reason);

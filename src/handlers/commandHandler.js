@@ -1,6 +1,7 @@
 /**
  * Descubre los comandos de barra en `src/commands`.
- * Cada módulo de comando debe exportar `{ data: SlashCommandBuilder, execute(interaction) }`.
+ * Cada módulo debe exportar `{ data: SlashCommandBuilder, execute(interaction) }`
+ * o un array de esos objetos (así un módulo puede registrar varios comandos).
  */
 const fs = require('node:fs');
 const path = require('node:path');
@@ -21,16 +22,17 @@ function loadCommands() {
   const files = fs.readdirSync(COMMANDS_DIR).filter((file) => file.endsWith('.js'));
 
   for (const file of files) {
-    const filePath = path.join(COMMANDS_DIR, file);
-    const command = require(filePath);
+    const exported = require(path.join(COMMANDS_DIR, file));
+    const list = Array.isArray(exported) ? exported : [exported];
 
-    if (!command?.data?.name || typeof command.execute !== 'function') {
-      logger.warn(`Skipping ${file}: missing "data" or "execute" export.`);
-      continue;
+    for (const command of list) {
+      if (!command?.data?.name || typeof command.execute !== 'function') {
+        logger.warn(`Skipping ${file}: missing "data" or "execute" export.`);
+        continue;
+      }
+      commands.set(command.data.name, command);
+      logger.debug(`Loaded command /${command.data.name}`);
     }
-
-    commands.set(command.data.name, command);
-    logger.debug(`Loaded command /${command.data.name}`);
   }
 
   logger.info(`Loaded ${commands.size} command(s).`);

@@ -20,12 +20,12 @@ module.exports = {
 
   /** @param {import('discord.js').ChatInputCommandInteraction<'cached'>} interaction */
   async execute(interaction) {
-    if (!config.previewRoleId) {
+    if (!config.testerRoleId) {
       throw new UserFacingError('PREVIEW_ROLE_ID no está definido en el archivo .env.');
     }
 
-    if (!interaction.member.roles.cache.has(config.previewRoleId)) {
-      throw new UserFacingError(`Este comando solo está disponible para el rol <@&${config.previewRoleId}>.`);
+    if (!interaction.member.roles.cache.has(config.testerRoleId)) {
+      throw new UserFacingError(`Este comando solo está disponible para el rol <@&${config.testerRoleId}>.`);
     }
 
     const lines = phrases.map((phrase, index) => {
