@@ -11,6 +11,7 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { chunk } = require('../utils/random');
 const { buildCustomId } = require('../handlers/componentHandler');
+const { t } = require('../i18n');
 
 const PREFIX = 'rolemenu';
 const ACTION_TOGGLE = 'toggle';
@@ -21,9 +22,6 @@ const MAX_ROWS = 5;
 const MAX_ROLES = BUTTONS_PER_ROW * MAX_ROWS;
 const MAX_BUTTON_LABEL = 80;
 const SETUP_TTL_MS = 10 * 60 * 1000;
-
-const DEFAULT_TITLE = 'Elige tus roles';
-const DEFAULT_DESCRIPTION = 'Pulsa un botón para activar un rol. Vuelve a pulsarlo para quitártelo.';
 const MENU_COLOR = 0x5865f2;
 
 /** Sesiones pendientes de `/rolemenu create`, indexadas por `guildId:userId`. */
@@ -65,26 +63,26 @@ function validateMenuRoles(actor, roles) {
 
   for (const role of roles) {
     if (role.id === role.guild.id) {
-      problems.push('@everyone no se puede incluir.');
+      problems.push(t('roles.menu.problems.everyone'));
       continue;
     }
     if (role.managed) {
-      problems.push(`${role} lo gestiona una integración y no se puede autoasignar.`);
+      problems.push(t('roles.menu.problems.managed', { role }));
       continue;
     }
     if (!role.editable) {
-      problems.push(`${role} está por encima de mi rol más alto; mueve mi rol por encima de él.`);
+      problems.push(t('roles.menu.problems.aboveBot', { role }));
       continue;
     }
     if (!isOwner && actor.roles.highest.comparePositionTo(role) <= 0) {
-      problems.push(`${role} está por encima de tu rol más alto, así que no puedes ofrecerlo.`);
+      problems.push(t('roles.menu.problems.aboveActor', { role }));
       continue;
     }
     valid.push(role);
   }
 
   if (valid.length > MAX_ROLES) {
-    problems.push(`Solo se incluyen los primeros ${MAX_ROLES} roles (límite de botones de Discord).`);
+    problems.push(t('roles.menu.problems.tooMany', { max: MAX_ROLES }));
   }
 
   return { valid: valid.slice(0, MAX_ROLES), problems };
@@ -110,8 +108,8 @@ function buildRoleMenu({ title, description, roles }) {
 
   const embed = new EmbedBuilder()
     .setColor(MENU_COLOR)
-    .setTitle(title || DEFAULT_TITLE)
-    .setDescription(`${description || DEFAULT_DESCRIPTION}\n\n${lines.join('\n')}`);
+    .setTitle(title || t('roles.menu.defaultTitle'))
+    .setDescription(`${description || t('roles.menu.defaultDescription')}\n\n${lines.join('\n')}`);
 
   return { embeds: [embed], components: rows };
 }

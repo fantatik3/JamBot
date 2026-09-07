@@ -10,7 +10,8 @@
  *   /<juego> test [duration]   -> ronda rápida de prueba en este canal (solo el rol de pruebas)
  *
  * Cada juego responde solo en su canal (<ID>_CHANNEL_ID), salvo `tutorial` y `test`, que están
- * reservados al rol de pruebas y funcionan en cualquier canal.
+ * reservados al rol de pruebas y funcionan en cualquier canal. Los textos salen de engine.command
+ * del idioma configurado.
  */
 const { SlashCommandBuilder, MessageFlags, InteractionContextType } = require('discord.js');
 const config = require('../../config');
@@ -18,8 +19,14 @@ const engine = require('./roundEngine');
 const messages = require('./messages');
 const scheduler = require('../../services/gameScheduler');
 const { UserFacingError } = require('../../utils/errors');
+const { t, get } = require('../../i18n');
 
 const TEST_MINUTES = 2;
+
+/** Texto de engine.command.<clave>. */
+function c(key, params) {
+  return t(`engine.command.${key}`, params);
+}
 
 /** Minutos de cada fase para un juego: los suyos si los define, si no los de la configuración. */
 function durationsOf(game, override = null) {
@@ -37,35 +44,21 @@ function createGameCommand(game) {
     .addSubcommand((sub) =>
       sub
         .setName('start')
-        .setDescription('Empieza una ronda ahora mismo.')
-        .addIntegerOption((opt) =>
-          opt
-            .setName('duration')
-            .setDescription('Minutos para enviar y para votar (por defecto, los de la configuración)')
-            .setMinValue(1)
-            .setMaxValue(720),
-        ),
+        .setDescription(c('start.description'))
+        .addIntegerOption((opt) => opt.setName('duration').setDescription(c('start.duration')).setMinValue(1).setMaxValue(720)),
     )
-    .addSubcommand((sub) =>
-      sub.setName('next').setDescription('Cierra la fase actual: pasa a votación o publica los resultados.'),
-    )
-    .addSubcommand((sub) => sub.setName('cancel').setDescription('Cancela la ronda en marcha sin repartir puntos.'))
-    .addSubcommand((sub) => sub.setName('scores').setDescription('Muestra la clasificación.'))
-    .addSubcommand((sub) => sub.setName('glossary').setDescription('Muestra las últimas respuestas ganadoras.'))
-    .addSubcommand((sub) => sub.setName('schedule').setDescription('Muestra las rondas automáticas previstas para hoy.'))
-    .addSubcommand((sub) =>
-      sub.setName('tutorial').setDescription('Publica las instrucciones del juego en este canal (solo el rol de pruebas).'),
-    )
+    .addSubcommand((sub) => sub.setName('next').setDescription(c('next')))
+    .addSubcommand((sub) => sub.setName('cancel').setDescription(c('cancel')))
+    .addSubcommand((sub) => sub.setName('scores').setDescription(c('scores')))
+    .addSubcommand((sub) => sub.setName('glossary').setDescription(c('glossary')))
+    .addSubcommand((sub) => sub.setName('schedule').setDescription(c('schedule')))
+    .addSubcommand((sub) => sub.setName('tutorial').setDescription(c('tutorial')))
     .addSubcommand((sub) =>
       sub
         .setName('test')
-        .setDescription('Ronda rápida de prueba en este canal (solo el rol de pruebas).')
+        .setDescription(c('test.description'))
         .addIntegerOption((opt) =>
-          opt
-            .setName('duration')
-            .setDescription(`Minutos por fase (por defecto ${TEST_MINUTES})`)
-            .setMinValue(1)
-            .setMaxValue(60),
+          opt.setName('duration').setDescription(c('test.duration', { minutes: TEST_MINUTES })).setMinValue(1).setMaxValue(60),
         ),
     );
 
@@ -83,7 +76,7 @@ function createGameCommand(game) {
 
     const channelId = config.gameChannelId(game.id);
     if (channelId && interaction.channelId !== channelId) {
-      throw new UserFacingError(`${game.name} solo funciona en <#${channelId}>.`);
+      throw new UserFacingError(c('wrongChannel', { game: game.name, channelId }));
     }
 
     switch (sub) {
@@ -94,25 +87,34 @@ function createGameCommand(game) {
       case 'cancel':
         return handleCancel(game, interaction);
       case 'scores':
-        return interaction.reply(messages.scores('Clasificación', engine.getScores(interaction.guildId), game.color));
+        return interaction.reply(messages.scores(t('engine.scores.title'), engine.getScores(interaction.guildId), game.color));
       case 'glossary':
         return interaction.reply(messages.glossary(game, engine.getGlossary(game, interaction.guildId)));
       case 'schedule':
         return handleSchedule(game, interaction);
       default:
-        throw new UserFacingError('Subcomando desconocido.');
+        throw new UserFacingError(c('unknownSubcommand'));
     }
   }
 
   return { data, execute };
 }
 
+/** Datos que reciben las instrucciones de un juego, incluida la frase de cadencia ya resuelta. */
 function tutorialSettings(game) {
   const { points, answer } = engine.settingsOf(game);
   const { submitMinutes, voteMinutes } = durationsOf(game);
+  const channelId = config.gameChannelId(game.id);
+  const roundsPerDay = config.games.roundsPerDay;
+  const where = channelId ? t('engine.tutorial.whereChannel', { channelId }) : t('engine.tutorial.whereHere');
+  const cadence =
+    roundsPerDay > 0 ? t('engine.tutorial.cadenceAuto', { where }) : t('engine.tutorial.cadenceManual', { gameId: game.id, where });
+
   return {
-    channelId: config.gameChannelId(game.id),
-    roundsPerDay: config.games.roundsPerDay,
+    gameId: game.id,
+    channelId,
+    roundsPerDay,
+    cadence,
     submitMinutes,
     voteMinutes,
     answerMax: answer.max,
@@ -121,7 +123,7 @@ function tutorialSettings(game) {
 }
 
 async function launchRound(game, interaction, durations) {
-  if (!interaction.channel) throw new UserFacingError('No puedo ver este canal.');
+  if (!interaction.channel) throw new UserFacingError(c('cannotSeeChannel'));
   await interaction.deferReply({ flags: MessageFlags.Ephemeral });
   return engine.startRound({
     game,
@@ -135,32 +137,31 @@ async function launchRound(game, interaction, durations) {
 async function handleStart(game, interaction) {
   const duration = interaction.options.getInteger('duration');
   const round = await launchRound(game, interaction, durationsOf(game, duration));
-  await interaction.editReply(`Ronda ${round.number} iniciada: ${engine.messageLink(round)}`);
+  await interaction.editReply(c('started', { number: round.number, link: engine.messageLink(round) }));
 }
 
 /** Lanza un error si quien ejecuta el comando no tiene el rol de pruebas. */
 function requireTesterRole(interaction) {
   const roleId = config.testerRoleId;
-  if (!roleId) throw new UserFacingError('PREVIEW_ROLE_ID no está definido en el archivo .env.');
+  if (!roleId) throw new UserFacingError(t('common.envMissing', { name: 'PREVIEW_ROLE_ID' }));
   if (!interaction.member.roles.cache.has(roleId)) {
-    throw new UserFacingError(`Este comando solo está disponible para el rol <@&${roleId}>.`);
+    throw new UserFacingError(t('common.testerRoleOnly', { roleId }));
   }
 }
 
 async function handleTest(game, interaction) {
   const minutes = interaction.options.getInteger('duration') ?? TEST_MINUTES;
   const round = await launchRound(game, interaction, { submitMinutes: minutes, voteMinutes: minutes });
-  const bank = game.bankSize ? ` · ${game.bankSize} consignas en el banco` : '';
+  const bank = game.bankSize ? c('bankNote', { size: game.bankSize }) : '';
   await interaction.editReply(
-    `Ronda de prueba de ${game.name} iniciada (${minutes} min por fase): ${engine.messageLink(round)}${bank}\n` +
-      `Usa \`/${game.id} next\` para adelantar fases o \`/${game.id} cancel\` para descartarla.`,
+    c('testStarted', { game: game.name, gameId: game.id, minutes, link: engine.messageLink(round), bank }),
   );
 }
 
 function requireActiveRound(game, interaction) {
   const round = engine.getActiveRound(game, interaction.guildId);
   if (!round) {
-    throw new UserFacingError(`No hay ninguna ronda de ${game.name} en marcha. Empieza una con \`/${game.id} start\`.`);
+    throw new UserFacingError(c('noActiveRound', { game: game.name, gameId: game.id }));
   }
   engine.assertCanManage(round, interaction.member);
   return round;
@@ -172,45 +173,46 @@ async function handleNext(game, interaction) {
 
   if (round.phase === engine.PHASE.SUBMITTING) {
     const { outcome } = await engine.closeSubmissions(round);
-    const text = {
-      voting: 'Envíos cerrados. La votación está abierta.',
-      finished: 'Envíos cerrados. Resultados publicados.',
-      cancelled: 'Nadie envió nada, la ronda queda cancelada.',
-    }[outcome];
-    await interaction.editReply(text ?? 'Hecho.');
+    const text = get(`engine.command.nextOutcome.${outcome}`) ?? c('nextOutcome.done');
+    await interaction.editReply(text);
     return;
   }
 
   await engine.finishRound(round);
-  await interaction.editReply('Votación cerrada. Resultados publicados.');
+  await interaction.editReply(c('nextOutcome.votingClosed'));
 }
 
 async function handleCancel(game, interaction) {
   const round = requireActiveRound(game, interaction);
   await interaction.deferReply({ flags: MessageFlags.Ephemeral });
-  await engine.cancelRound(round, `Ronda cancelada por <@${interaction.user.id}>.`);
-  await interaction.editReply('Ronda cancelada.');
+  await engine.cancelRound(round, t('engine.cancelledBy', { user: `<@${interaction.user.id}>` }));
+  await interaction.editReply(c('cancelled'));
 }
 
 async function handleSchedule(game, interaction) {
   const { roundsPerDay, activeHours, submitMinutes, voteMinutes } = config.games;
   if (!config.gameChannelId(game.id) || roundsPerDay <= 0) {
-    throw new UserFacingError(
-      `Las rondas automáticas de ${game.name} están desactivadas (revisa ${game.id.toUpperCase()}_CHANNEL_ID y GAMES_ROUNDS_PER_DAY en .env).`,
-    );
+    throw new UserFacingError(c('scheduleDisabled', { game: game.name, gameId: game.id }));
   }
 
   const upcoming = scheduler.upcoming();
   const lines = upcoming.length
-    ? upcoming.map(({ time, game: g }) => `• <t:${Math.floor(time / 1000)}:t> (<t:${Math.floor(time / 1000)}:R>) · ${g.name}`)
-    : ['• Ninguna más por hoy. Mañana se sortean de nuevo.'];
+    ? upcoming.map(({ time, game: g }) => {
+        const seconds = Math.floor(time / 1000);
+        return c('scheduleLine', { time: `<t:${seconds}:t>`, relative: `<t:${seconds}:R>`, game: g.name });
+      })
+    : [c('scheduleNone')];
 
   const active = engine.getActiveRound(game, interaction.guildId);
   const summary =
-    `**Rondas automáticas de hoy (todos los juegos)**\n${lines.join('\n')}\n\n` +
-    `Configuración: ${roundsPerDay} ronda(s) al día en total, rotando entre juegos, entre las ${activeHours.start}:00 y las ${activeHours.end}:00, ` +
-    `${submitMinutes} min para enviar y ${voteMinutes} min para votar.` +
-    (active ? `\nRonda de ${game.name} en marcha: ${engine.messageLink(active)}` : '');
+    c('scheduleSummary', {
+      lines: lines.join('\n'),
+      roundsPerDay,
+      start: activeHours.start,
+      end: activeHours.end,
+      submitMinutes,
+      voteMinutes,
+    }) + (active ? c('scheduleActive', { game: game.name, link: engine.messageLink(active) }) : '');
 
   await interaction.reply({ content: summary, flags: MessageFlags.Ephemeral });
 }

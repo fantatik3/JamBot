@@ -67,10 +67,7 @@ function createGameHandler(game) {
         if (!interaction.isButton()) return;
         const index = parseIndex(extra, s);
         const { changed } = await engine.vote(round, interaction.user.id, index);
-        await interaction.reply({
-          content: changed ? `Voto cambiado a la opción ${index + 1}.` : `Voto registrado: opción ${index + 1}.`,
-          ...EPHEMERAL,
-        });
+        await interaction.reply({ content: changed ? s.voteChanged(index + 1) : s.voteReceived(index + 1), ...EPHEMERAL });
         return;
       }
 

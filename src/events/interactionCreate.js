@@ -9,6 +9,7 @@ const { Events, MessageFlags } = require('discord.js');
 const logger = require('../utils/logger');
 const { parseCustomId } = require('../handlers/componentHandler');
 const { UserFacingError } = require('../utils/errors');
+const { t } = require('../i18n');
 
 module.exports = {
   name: Events.InteractionCreate,
@@ -48,7 +49,7 @@ async function handleCommand(interaction) {
   const command = interaction.client.commands.get(interaction.commandName);
   if (!command) {
     logger.warn(`Received unknown command /${interaction.commandName}. Did you run "npm run deploy"?`);
-    throw new UserFacingError('Comando desconocido. Puede que haya que volver a registrar los comandos del bot.');
+    throw new UserFacingError(t('common.unknownCommand'));
   }
   logger.debug(`/${interaction.commandName} by ${interaction.user.tag}`);
   await command.execute(interaction);
@@ -83,7 +84,7 @@ async function reportError(interaction, error) {
   const isUserFacing = error instanceof UserFacingError;
   if (!isUserFacing) logger.error(`Error handling interaction ${interaction.id}:`, error);
 
-  const content = isUserFacing ? error.message : 'Algo salió mal. Inténtalo de nuevo más tarde.';
+  const content = isUserFacing ? error.message : t('common.somethingWentWrong');
   const reply = { content, flags: MessageFlags.Ephemeral, allowedMentions: { parse: [] } };
 
   try {

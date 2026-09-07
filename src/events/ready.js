@@ -3,6 +3,7 @@ const logger = require('../utils/logger');
 const engine = require('../games/engine/roundEngine');
 const scheduler = require('../services/gameScheduler');
 const { games } = require('../games');
+const { t } = require('../i18n');
 
 module.exports = {
   name: Events.ClientReady,
@@ -12,7 +13,7 @@ module.exports = {
   async execute(client) {
     client.user.setPresence({
       // El estado personalizado muestra `state` tal cual, sin el prefijo "Jugando a"/"Viendo" en ningún idioma del cliente.
-      activities: [{ name: 'estado', type: ActivityType.Custom, state: 'Dando la bienvenida a los nuevos miembros' }],
+      activities: [{ name: 'status', type: ActivityType.Custom, state: t('common.presence') }],
       status: 'online',
     });
     await engine.resume(client, games);

@@ -17,6 +17,7 @@ const logger = require('../../utils/logger');
 const { UserFacingError } = require('../../utils/errors');
 const { shuffle, pickRandom } = require('../../utils/random');
 const messages = require('./messages');
+const { t } = require('../../i18n');
 
 const ACTIONS = Object.freeze({
   SUBMIT: 'submit', // botón: abre el modal de respuesta
@@ -173,7 +174,7 @@ function assertCanManage(round, member) {
 async function fetchChannel(channelId) {
   if (!client) throw new Error('roundEngine.resume(client, games) has not been called');
   const channel = await client.channels.fetch(channelId);
-  if (!channel?.isTextBased()) throw new UserFacingError('El canal de la ronda ya no existe.');
+  if (!channel?.isTextBased()) throw new UserFacingError(t('engine.channelGone'));
   return channel;
 }
 
@@ -265,7 +266,7 @@ async function startRound({ game, guild, channel, hostId, submitMinutes, voteMin
   // Una ronda por juego y una ronda por canal; juegos distintos en canales distintos pueden coincidir.
   const active = getActiveRound(game, guild.id) ?? getActiveRoundInChannel(guild.id, channel.id);
   if (active) {
-    throw new UserFacingError(`Ya hay una ronda en marcha: ${messageLink(active)}`);
+    throw new UserFacingError(t('engine.roundInProgress', { link: messageLink(active) }));
   }
 
   const prompt = pickPrompt(game, data);
@@ -485,7 +486,7 @@ async function finishRound(round) {
 }
 
 /** Descarta la ronda sin repartir puntos. */
-async function cancelRound(round, reason = 'Ronda cancelada.') {
+async function cancelRound(round, reason = t('engine.cancelledDefault')) {
   const game = gameOf(round);
   clearTimer(round.id);
   const data = gameData(game, round.guildId);

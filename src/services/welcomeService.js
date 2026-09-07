@@ -1,15 +1,16 @@
 /**
- * Construye el mensaje de bienvenida para un miembro nuevo.
+ * Construye el mensaje de bienvenida para un miembro nuevo. Las frases viven en el idioma
+ * configurado (src/locales/<idioma>/welcome.js).
  */
-const phrases = require('../config/welcomePhrases');
 const { pickRandom } = require('../utils/random');
+const { get } = require('../i18n');
 
 /**
  * @param {import('discord.js').GuildMember} member
  * @returns {import('discord.js').MessageCreateOptions}
  */
 function buildWelcomeMessage(member) {
-  const content = pickRandom(phrases)
+  const content = pickRandom(get('welcome.phrases'))
     .replaceAll('{user}', member.toString())
     .replaceAll('{server}', member.guild.name);
 

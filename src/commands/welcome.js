@@ -6,23 +6,20 @@ const { SlashCommandBuilder, PermissionFlagsBits, MessageFlags, InteractionConte
 const config = require('../config');
 const { buildWelcomeMessage } = require('../services/welcomeService');
 const { UserFacingError } = require('../utils/errors');
+const { t } = require('../i18n');
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('welcome')
-    .setDescription('Prueba el mensaje de bienvenida.')
+    .setDescription(t('welcome.command.description'))
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
     .setContexts(InteractionContextType.Guild)
-    .addSubcommand((sub) =>
-      sub.setName('preview').setDescription('Muestra un mensaje de bienvenida de ejemplo (solo tú lo ves).'),
-    )
+    .addSubcommand((sub) => sub.setName('preview').setDescription(t('welcome.command.preview')))
     .addSubcommand((sub) =>
       sub
         .setName('send')
-        .setDescription('Publica un mensaje de bienvenida en el canal de bienvenida.')
-        .addUserOption((opt) =>
-          opt.setName('user').setDescription('Miembro al que dar la bienvenida (por defecto, tú)'),
-        ),
+        .setDescription(t('welcome.command.send'))
+        .addUserOption((opt) => opt.setName('user').setDescription(t('welcome.command.user'))),
     ),
 
   /** @param {import('discord.js').ChatInputCommandInteraction<'cached'>} interaction */
@@ -31,7 +28,7 @@ module.exports = {
     const member = interaction.options.getMember('user') ?? interaction.member;
 
     if (!member) {
-      throw new UserFacingError('Ese usuario no es miembro de este servidor.');
+      throw new UserFacingError(t('common.notAMember'));
     }
 
     const payload = buildWelcomeMessage(member);
@@ -42,15 +39,15 @@ module.exports = {
     }
 
     if (!config.welcomeChannelId) {
-      throw new UserFacingError('WELCOME_CHANNEL_ID no está definido en el archivo .env.');
+      throw new UserFacingError(t('common.envMissing', { name: 'WELCOME_CHANNEL_ID' }));
     }
 
     const channel = interaction.guild.channels.cache.get(config.welcomeChannelId);
     if (!channel?.isTextBased()) {
-      throw new UserFacingError('No se encontró el canal de bienvenida configurado o no es un canal de texto.');
+      throw new UserFacingError(t('welcome.command.channelMissing'));
     }
 
     const message = await channel.send(payload);
-    await interaction.reply({ content: `Mensaje de bienvenida enviado: ${message.url}`, flags: MessageFlags.Ephemeral });
+    await interaction.reply({ content: t('welcome.command.sent', { url: message.url }), flags: MessageFlags.Ephemeral });
   },
 };

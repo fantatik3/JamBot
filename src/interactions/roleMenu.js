@@ -14,6 +14,7 @@ const {
 } = require('../services/roleMenuService');
 const roleService = require('../services/roleService');
 const { UserFacingError } = require('../utils/errors');
+const { t } = require('../i18n');
 
 const NO_PINGS = { allowedMentions: { parse: [] } };
 
@@ -26,7 +27,7 @@ module.exports = {
    */
   async execute(interaction, [action, roleId]) {
     if (!interaction.inCachedGuild()) {
-      throw new UserFacingError('Este menú solo funciona dentro de un servidor.');
+      throw new UserFacingError(t('roles.menu.guildOnly'));
     }
 
     if (action === ACTION_SETUP && interaction.isRoleSelectMenu()) {
@@ -41,18 +42,18 @@ module.exports = {
 async function handleSetup(interaction) {
   const setup = takeSetup(interaction.guildId, interaction.user.id);
   if (!setup) {
-    throw new UserFacingError('Esta configuración caducó. Vuelve a ejecutar `/rolemenu create`.');
+    throw new UserFacingError(t('roles.menu.setupExpired'));
   }
 
   const channel = interaction.guild.channels.cache.get(setup.channelId);
   if (!channel?.isTextBased()) {
-    throw new UserFacingError('El canal de destino ya no existe.');
+    throw new UserFacingError(t('roles.menu.channelGone'));
   }
 
   const { valid, problems } = validateMenuRoles(interaction.member, [...interaction.roles.values()]);
   if (valid.length === 0) {
     const details = problems.map((p) => `• ${p}`).join('\n');
-    throw new UserFacingError(`Ninguno de los roles elegidos se puede incluir:\n${details}`);
+    throw new UserFacingError(t('roles.menu.nothingValid', { details }));
   }
 
   const message = await channel.send({
@@ -60,9 +61,9 @@ async function handleSetup(interaction) {
     ...NO_PINGS,
   });
 
-  const lines = [`Menú de roles publicado en ${channel}: ${message.url}`];
+  const lines = [t('roles.menu.published', { channel, url: message.url })];
   if (problems.length > 0) {
-    lines.push('', 'Algunos roles se omitieron:', ...problems.map((p) => `• ${p}`));
+    lines.push('', t('roles.menu.someSkipped'), ...problems.map((p) => `• ${p}`));
   }
 
   // Sustituye el selector efímero por la confirmación.
@@ -73,18 +74,18 @@ async function handleSetup(interaction) {
 async function handleToggle(interaction, roleId) {
   const isOwnMessage = interaction.message.author?.id === interaction.client.user.id;
   if (!isOwnMessage || !roleId) {
-    throw new UserFacingError('Este botón no pertenece a un menú de roles válido.');
+    throw new UserFacingError(t('roles.menu.invalidButton'));
   }
 
   const role = interaction.guild.roles.cache.get(roleId);
   if (!role) {
-    throw new UserFacingError('Ese rol ya no existe. Pide a un moderador que cree el menú de nuevo.');
+    throw new UserFacingError(t('roles.menu.roleGone'));
   }
 
   const { added } = await roleService.toggleRole(interaction.member, role);
 
   await interaction.reply({
-    content: added ? `Ahora tienes ${role}.` : `Ya no tienes ${role}.`,
+    content: added ? t('roles.menu.nowHave', { role }) : t('roles.menu.noLongerHave', { role }),
     flags: MessageFlags.Ephemeral,
     ...NO_PINGS,
   });

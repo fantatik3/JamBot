@@ -5,9 +5,9 @@
  */
 const { SlashCommandBuilder, InteractionContextType } = require('discord.js');
 const config = require('../config');
-const phrases = require('../config/welcomePhrases');
 const { chunkLines } = require('../utils/text');
 const { UserFacingError } = require('../utils/errors');
+const { t, get } = require('../i18n');
 
 // Deja margen por debajo del límite de 2000 caracteres por mensaje de Discord.
 const MAX_MESSAGE_LENGTH = 1900;
@@ -15,19 +15,20 @@ const MAX_MESSAGE_LENGTH = 1900;
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('phrases')
-    .setDescription('Muestra todas las frases de bienvenida en este canal.')
+    .setDescription(t('welcome.phrasesCommand.description'))
     .setContexts(InteractionContextType.Guild),
 
   /** @param {import('discord.js').ChatInputCommandInteraction<'cached'>} interaction */
   async execute(interaction) {
     if (!config.testerRoleId) {
-      throw new UserFacingError('PREVIEW_ROLE_ID no está definido en el archivo .env.');
+      throw new UserFacingError(t('common.envMissing', { name: 'PREVIEW_ROLE_ID' }));
     }
 
     if (!interaction.member.roles.cache.has(config.testerRoleId)) {
-      throw new UserFacingError(`Este comando solo está disponible para el rol <@&${config.testerRoleId}>.`);
+      throw new UserFacingError(t('common.testerRoleOnly', { roleId: config.testerRoleId }));
     }
 
+    const phrases = get('welcome.phrases');
     const lines = phrases.map((phrase, index) => {
       const rendered = phrase
         .replaceAll('{user}', interaction.member.toString())
@@ -35,7 +36,8 @@ module.exports = {
       return `**${index + 1}.** ${rendered}`;
     });
 
-    const chunks = chunkLines([`**Frases de bienvenida (${phrases.length}):**`, ...lines], MAX_MESSAGE_LENGTH);
+    const header = t('welcome.phrasesCommand.header', { count: phrases.length });
+    const chunks = chunkLines([header, ...lines], MAX_MESSAGE_LENGTH);
 
     // Las menciones se muestran, pero no notifican a nadie.
     const noPings = { allowedMentions: { parse: [] } };

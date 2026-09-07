@@ -1,8 +1,9 @@
 /**
- * Mensajes y textos del motor de rondas. Todo lo que ve la gente sale de aquí.
+ * Mensajes y textos del motor de rondas. Todo lo que ve la gente sale de aquí, en el idioma
+ * configurado (src/locales): los textos comunes están en `engine` y los de cada juego en `games.<id>`.
  *
  * Cada juego puede cambiar el sustantivo de la respuesta (por ejemplo "explicación") o
- * sobrescribir cualquier texto concreto a través de `game.strings`.
+ * sobrescribir cualquier texto concreto desde `games.<id>.strings` de su idioma.
  */
 const {
   EmbedBuilder,
@@ -16,6 +17,7 @@ const {
 const { buildCustomId } = require('../../handlers/componentHandler');
 const { chunk } = require('../../utils/random');
 const { chunkLines, truncate } = require('../../utils/text');
+const { t, get } = require('../../i18n');
 
 const BUTTONS_PER_ROW = 5;
 const MAX_PINGED_WINNERS = 40;
@@ -37,51 +39,20 @@ function isChoice(game) {
   return game.mode === 'choice';
 }
 
-/** Textos por defecto construidos a partir del sustantivo (femenino) que usa el juego. */
-function defaultStrings(game) {
-  const noun = game.strings?.noun ?? 'respuesta';
-  const plural = game.strings?.nounPlural ?? `${noun}s`;
-  const closeButton = isChoice(game) || game.pickWinners ? 'Cerrar y corregir' : 'Cerrar envíos y votar';
-  return {
-    noun,
-    nounPlural: plural,
-    submitButton: `Enviar ${noun}`,
-    closeButton,
-    finishButton: 'Terminar votación',
-    receivedField: `${capitalize(plural)} recibidas`,
-    roundFooter: isChoice(game)
-      ? 'Puedes cambiar tu respuesta hasta que se cierre la ronda.'
-      : `Las ${plural} se muestran de forma anónima en la votación.`,
-    modalLabel: `Tu ${noun}`,
-    voteIntro: () => `Vota la ${noun} más clara. No puedes votar la tuya.`,
-    luckLine: `Nadie votó, así que la suerte ha elegido la ${noun} ganadora:`,
-    resultsFooter: `La ${noun} ganadora se guarda en el glosario (/${game.id} glossary).`,
-    revealField: 'Solución',
-    winnersField: 'Acertaron',
-    nobodyRight: 'Nadie acertó esta vez.',
-    glossaryEmpty: `El glosario está vacío. Las ${plural} ganadoras aparecerán aquí.`,
-    scoresEmpty: 'Todavía nadie tiene puntos.',
-    submitReceived: `${capitalize(noun)} recibida. Se mostrará de forma anónima en la votación.`,
-    submitUpdated: `${capitalize(noun)} actualizada.`,
-    pickReceived: (letter) => `Respuesta registrada: ${letter}. Puedes cambiarla hasta que se cierre la ronda.`,
-    pickChanged: (letter) => `Respuesta cambiada a ${letter}.`,
-    closed: 'Los envíos de esta ronda ya están cerrados.',
-    tooShort: `Escribe una ${noun} un poco más larga.`,
-    tooLong: (max) => `Máximo ${max} caracteres. La gracia es que sea corta.`,
-    maxSubmissions: (max) => `Esta ronda ya tiene el máximo de ${max} ${plural}.`,
-    notVoting: 'La votación de esta ronda no está abierta.',
-    badOption: 'Esa opción no existe.',
-    selfVote: `No puedes votar tu propia ${noun}.`,
-    noRound: 'Esta ronda ya terminó.',
-    manageOnly: 'Solo quien inició la ronda (o alguien con **Gestionar mensajes**) puede hacer eso.',
-    cancelledEmpty: `Nadie envió una ${noun}, así que la ronda queda cancelada.`,
-    guildOnly: 'Este juego solo funciona dentro de un servidor.',
-  };
-}
-
-/** Textos efectivos de un juego: los suyos por encima de los predeterminados. */
+/**
+ * Textos efectivos de un juego: los del motor (engine.strings, construidos con el sustantivo del
+ * juego) por debajo de los propios del juego (games.<id>.strings) y de los que defina en código.
+ */
 function strings(game) {
-  return { ...defaultStrings(game), ...(game.strings ?? {}) };
+  const own = get(`games.${game.id}.strings`) ?? {};
+  const defaults = t('engine.strings', {
+    noun: own.noun,
+    nounPlural: own.nounPlural,
+    gameId: game.id,
+    choice: isChoice(game),
+    judged: Boolean(game.pickWinners),
+  });
+  return { ...defaults, ...own, ...(game.strings ?? {}) };
 }
 
 function round(game, round, { closed = false, note = null } = {}) {
@@ -90,11 +61,15 @@ function round(game, round, { closed = false, note = null } = {}) {
 
   const embed = new EmbedBuilder()
     .setColor(game.color)
-    .setTitle(`${game.name} · Ronda ${round.number}`)
+    .setTitle(t('engine.round.title', { game: game.name, number: round.number }))
     .setDescription(game.promptBody(round.prompt))
     .addFields(
       { name: s.receivedField, value: String(received), inline: true },
-      { name: 'Envíos', value: closed ? 'Cerrados' : `Se cierran ${timestamp(round.deadline)}`, inline: true },
+      {
+        name: t('engine.round.submissionsField'),
+        value: closed ? t('engine.round.closed') : t('engine.round.closesAt', { when: timestamp(round.deadline) }),
+        inline: true,
+      },
     )
     .setFooter({ text: s.roundFooter });
 
@@ -155,13 +130,17 @@ function voting(game, round, { closed = false } = {}) {
   const embeds = [
     new EmbedBuilder()
       .setColor(game.color)
-      .setTitle(`${game.name} · Votación · ${game.promptLabel(round.prompt)}`)
+      .setTitle(t('engine.voting.title', { game: game.name, label: game.promptLabel(round.prompt) }))
       .setDescription(`${s.voteIntro(round.prompt)}\n\n${first}`),
     ...rest.map((text) => new EmbedBuilder().setColor(game.color).setDescription(text)),
   ];
   embeds.at(-1).addFields(
-    { name: 'Votos', value: String(voteCount), inline: true },
-    { name: 'Votación', value: closed ? 'Cerrada' : `Se cierra ${timestamp(round.deadline)}`, inline: true },
+    { name: t('engine.voting.votesField'), value: String(voteCount), inline: true },
+    {
+      name: t('engine.voting.statusField'),
+      value: closed ? t('engine.voting.closed') : t('engine.voting.closesAt', { when: timestamp(round.deadline) }),
+      inline: true,
+    },
   );
 
   if (closed) return { embeds, components: [], ...NO_PINGS };
@@ -189,9 +168,8 @@ function results(game, round, winners, tally, { mode = 'vote', byLuck = false, p
   const s = strings(game);
   const label = game.promptLabel(round.prompt);
   const showVotes = mode === 'vote';
-
-  let title = `${game.name} · Resultados · ${label}`;
-  if (showVotes && winners.length > 1) title = `${game.name} · Empate · ${label}`;
+  const titleKey = showVotes && winners.length > 1 ? 'engine.results.tieTitle' : 'engine.results.title';
+  const title = t(titleKey, { game: game.name, label });
 
   const parts = [];
   if (byLuck) parts.push(s.luckLine);
@@ -201,7 +179,12 @@ function results(game, round, winners, tally, { mode = 'vote', byLuck = false, p
   } else if (winners.length) {
     parts.push(
       winners
-        .map((e) => (showVotes ? `**${e.votes} voto(s)** · <@${e.userId}>\n> ${e.text}` : `<@${e.userId}> · ${e.text}`))
+        .map((e) => {
+          const user = `<@${e.userId}>`;
+          return showVotes
+            ? t('engine.results.voteLine', { votes: e.votes, user, text: e.text })
+            : t('engine.results.plainLine', { user, text: e.text });
+        })
         .join('\n\n'),
     );
   } else {
@@ -209,8 +192,12 @@ function results(game, round, winners, tally, { mode = 'vote', byLuck = false, p
   }
 
   const fields = [{ name: capitalize(s.nounPlural), value: String(tally.length), inline: true }];
-  if (showVotes) fields.push({ name: 'Votos', value: String(Object.keys(round.votes).length), inline: true });
-  fields.push({ name: 'Puntos', value: `Ganar +${points.win} · Participar +${points.participate}`, inline: true });
+  if (showVotes) fields.push({ name: t('engine.results.votesField'), value: String(Object.keys(round.votes).length), inline: true });
+  fields.push({
+    name: t('engine.results.pointsField'),
+    value: t('engine.results.pointsValue', { win: points.win, participate: points.participate }),
+    inline: true,
+  });
   if (reveal) fields.push({ name: s.revealField, value: truncate(reveal, 1024) });
 
   const embed = new EmbedBuilder()
@@ -231,8 +218,8 @@ function results(game, round, winners, tally, { mode = 'vote', byLuck = false, p
 
 function scores(title, entries, color) {
   const lines = entries.length
-    ? entries.slice(0, 10).map((entry, index) => `**${index + 1}.** <@${entry.userId}> · ${entry.points} punto(s)`)
-    : ['Todavía nadie tiene puntos.'];
+    ? entries.slice(0, 10).map((entry, index) => t('engine.scores.line', { rank: index + 1, user: `<@${entry.userId}>`, points: entry.points }))
+    : [t('engine.scores.empty')];
 
   const embed = new EmbedBuilder().setColor(color).setTitle(title).setDescription(lines.join('\n'));
   return { embeds: [embed], ...NO_PINGS };
@@ -242,29 +229,27 @@ function glossary(game, entries) {
   const s = strings(game);
   const lines = entries.length
     ? entries.slice(0, 8).map((entry) => {
-        const who = entry.authorId ? ` · <@${entry.authorId}> (${entry.votes} voto(s))` : '';
+        const who = entry.authorId ? t('engine.glossary.byLine', { user: `<@${entry.authorId}>`, votes: entry.votes }) : '';
         return `**${entry.label}**${who}\n> ${entry.answer}`;
       })
     : [s.glossaryEmpty];
 
   const embed = new EmbedBuilder()
     .setColor(game.color)
-    .setTitle(`${game.name} · Glosario`)
+    .setTitle(t('engine.glossary.title', { game: game.name }))
     .setDescription(truncate(lines.join('\n\n'), 4000));
   return { embeds: [embed], ...NO_PINGS };
 }
 
-/** Embed público con las instrucciones. El juego aporta la descripción y los pasos. */
+/** Embed público con las instrucciones. La descripción y los pasos salen del idioma (games.<id>.tutorial). */
 function tutorial(game, settings) {
-  const { description, fields } = game.tutorial(settings);
+  const { description, fields } = game.tutorial?.(settings) ?? t(`games.${game.id}.tutorial`, settings);
   const embed = new EmbedBuilder()
     .setColor(game.color)
-    .setTitle(`${game.name} · Cómo se juega`)
+    .setTitle(t('engine.tutorial.title', { game: game.name }))
     .setDescription(description)
     .addFields(...fields)
-    .setFooter({
-      text: `Con Gestionar mensajes se puede adelantar o cancelar una ronda con /${game.id} next y /${game.id} cancel.`,
-    });
+    .setFooter({ text: t('engine.tutorial.footer', { gameId: game.id }) });
   return { embeds: [embed], ...NO_PINGS };
 }
 

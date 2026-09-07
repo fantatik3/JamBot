@@ -18,14 +18,18 @@ src/
 ├── index.js                  # Punto de entrada: conecta todo e inicia sesión
 ├── client.js                 # Crea el cliente de Discord (intents, partials)
 ├── deploy-commands.js        # Registra los comandos de barra en Discord (npm run deploy)
+├── i18n.js                   # t(clave) devuelve el texto en el idioma de BOT_LANGUAGE
 ├── config/
-│   ├── index.js              # Carga y valida .env
-│   └── welcomePhrases.js     # Frases de bienvenida
+│   └── index.js              # Carga y valida .env
+├── locales/                  # Todo lo que dice el bot, una carpeta por idioma
+│   ├── index.js              # Idiomas disponibles (es, en)
+│   ├── es/                   # common.js, roles.js, welcome.js (con las frases), engine.js, games/<juego>.js
+│   └── en/                   # Lo mismo en inglés
 ├── games/                    # Una carpeta por juego educativo
 │   ├── index.js              # Registro: añade aquí un juego y aparecen su comando, botones y rondas
 │   ├── engine/               # Motor de rondas compartido
 │   │   ├── roundEngine.js    # Envíos, votación, puntos, glosario, temporizadores, almacén
-│   │   ├── messages.js       # Embeds, botones, modal y textos (cada juego puede sobrescribirlos)
+│   │   ├── messages.js       # Embeds, botones y modal; los textos salen de locales/
 │   │   ├── command.js        # Construye /<juego> start|next|cancel|scores|glossary|schedule|tutorial
 │   │   └── interaction.js    # Construye el manejador de botones y modal de un juego
 │   ├── jerga/                # Mata la jerga: index.js + terms.js
@@ -107,8 +111,10 @@ el ID de:
 cp .env.example .env      # y rellena los valores
 ```
 
-Las frases de bienvenida están en [`src/config/welcomePhrases.js`](src/config/welcomePhrases.js).
-`{user}` se convierte en la mención y `{server}` en el nombre del servidor.
+Con `BOT_LANGUAGE` se elige el idioma de todo lo que dice el bot: `es` (por defecto) o `en`. Los textos
+viven en `src/locales/<idioma>/`; las frases de bienvenida están en `welcome.js` de cada idioma, donde
+`{user}` se convierte en la mención y `{server}` en el nombre del servidor. Tras cambiar el idioma, ejecuta
+`npm run deploy` para que las descripciones de los comandos se registren en el idioma nuevo.
 
 ### 5. Instala, registra los comandos y arranca
 
@@ -214,15 +220,32 @@ una consigna, la gente responde con un formulario, las respuestas se votan de fo
 recibe puntos y la respuesta va al glosario. Para añadir uno:
 
 1. Copia `src/games/jerga/` a `src/games/<id>/` y edita `index.js`: el id es el nombre del comando
-   (`/<id>`) y el prefijo de los customId; `pickPrompt` elige qué se plantea, `promptBody` lo muestra,
-   `validateAnswer` rechaza respuestas no válidas y `tutorial` escribe las instrucciones. Los textos,
-   como el sustantivo de la respuesta, se pueden cambiar en `strings`.
-2. Añádelo a la lista de `src/games/index.js`.
-3. Ejecuta `npm run deploy`.
+   (`/<id>`) y el prefijo de los customId; `pickPrompt` elige qué se plantea, `promptBody` lo muestra y
+   `validateAnswer` rechaza respuestas no válidas.
+2. Crea `src/locales/es/games/<id>.js` (y su equivalente en `en/`) con el nombre, la descripción, los
+   textos y el `tutorial` del juego; el sustantivo de la respuesta y cualquier texto del motor se cambian
+   en `strings`. Regístralo en el `index.js` de cada idioma.
+3. Añádelo a la lista de `src/games/index.js`.
+4. Ejecuta `npm run deploy`.
 
 El comando, los botones, la rotación del planificador, los puntos y el glosario salen solos. Con `mode: 'judge'` y
 una función `pickWinners` no hay votación y decide una regla; con `mode: 'choice'` y `options` y `correct` en la
 consigna, se responde pulsando una letra.
+
+### Añadir un idioma
+
+Todo lo que dice el bot sale de `src/locales/<código>/` y se elige con `BOT_LANGUAGE` en `.env` (`es` por
+defecto, `en` disponible). Para añadir uno:
+
+1. Copia `src/locales/es/` a `src/locales/<código>/` y traduce sus archivos: `common.js`, `roles.js`,
+   `welcome.js` (incluye las frases de bienvenida), `engine.js` y `games/<juego>.js`.
+2. Regístralo en `src/locales/index.js`.
+3. Ejecuta `npm run check:locales` para ver qué claves faltan o sobran respecto al español, y
+   `npm run deploy` para registrar las descripciones de los comandos en el idioma nuevo.
+
+Cualquier clave que falte se toma del español y se avisa en el log. Los nombres de los comandos (`/jerga`,
+`/triaje`...) no cambian con el idioma, y los bancos de los juegos (términos, casos, preguntas, fragmentos
+de código) son contenido en español que tampoco se traduce.
 
 ### Otras cosas
 

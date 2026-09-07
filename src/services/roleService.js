@@ -3,6 +3,7 @@
  */
 const { UserFacingError } = require('../utils/errors');
 const logger = require('../utils/logger');
+const { t } = require('../i18n');
 
 /**
  * Lanza un UserFacingError si el bot no puede asignar o quitar `role`.
@@ -10,18 +11,13 @@ const logger = require('../utils/logger');
  */
 function assertManageable(role) {
   if (role.managed) {
-    throw new UserFacingError(
-      `**${role.name}** lo gestiona una integración (bot o mejora de servidor) y no se puede asignar a mano.`,
-    );
+    throw new UserFacingError(t('roles.errors.managed', { role: role.name }));
   }
   if (role.id === role.guild.id) {
-    throw new UserFacingError('El rol @everyone no se puede asignar.');
+    throw new UserFacingError(t('roles.errors.everyone'));
   }
   if (!role.editable) {
-    throw new UserFacingError(
-      `No puedo gestionar **${role.name}**. Asegúrate de que tengo el permiso **Gestionar roles** y de que ` +
-        'mi rol está por encima de él en Ajustes del servidor > Roles.',
-    );
+    throw new UserFacingError(t('roles.errors.notEditable', { role: role.name }));
   }
 }
 
@@ -34,16 +30,14 @@ function assertManageable(role) {
 function assertActorOutranks(actor, role) {
   const isOwner = actor.guild.ownerId === actor.id;
   if (!isOwner && actor.roles.highest.comparePositionTo(role) <= 0) {
-    throw new UserFacingError(
-      `Solo puedes gestionar roles por debajo de tu rol más alto (**${actor.roles.highest.name}**).`,
-    );
+    throw new UserFacingError(t('roles.errors.outranked', { role: actor.roles.highest.name }));
   }
 }
 
 /**
  * @returns {Promise<boolean>} true si se añadió el rol, false si el miembro ya lo tenía.
  */
-async function addRole(member, role, reason = 'Rol asignado por el bot') {
+async function addRole(member, role, reason = t('roles.reasons.assigned')) {
   assertManageable(role);
   if (member.roles.cache.has(role.id)) return false;
   await member.roles.add(role, reason);
@@ -54,7 +48,7 @@ async function addRole(member, role, reason = 'Rol asignado por el bot') {
 /**
  * @returns {Promise<boolean>} true si se quitó el rol, false si el miembro no lo tenía.
  */
-async function removeRole(member, role, reason = 'Rol quitado por el bot') {
+async function removeRole(member, role, reason = t('roles.reasons.removed')) {
   assertManageable(role);
   if (!member.roles.cache.has(role.id)) return false;
   await member.roles.remove(role, reason);
@@ -66,7 +60,7 @@ async function removeRole(member, role, reason = 'Rol quitado por el bot') {
  * Añade el rol si el miembro no lo tiene y lo quita en caso contrario.
  * @returns {Promise<{ added: boolean }>}
  */
-async function toggleRole(member, role, reason = 'Rol cambiado desde el menú de roles') {
+async function toggleRole(member, role, reason = t('roles.reasons.toggled')) {
   if (member.roles.cache.has(role.id)) {
     await removeRole(member, role, reason);
     return { added: false };

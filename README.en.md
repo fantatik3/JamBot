@@ -18,14 +18,18 @@ src/
 ├── index.js                  # Entry point: wires everything together and logs in
 ├── client.js                 # Creates the Discord client (intents, partials)
 ├── deploy-commands.js        # Registers slash commands with Discord (npm run deploy)
+├── i18n.js                   # t(key) returns the text in the BOT_LANGUAGE language
 ├── config/
-│   ├── index.js              # Loads and validates .env
-│   └── welcomePhrases.js     # Welcome phrases
+│   └── index.js              # Loads and validates .env
+├── locales/                  # Everything the bot says, one folder per language
+│   ├── index.js              # Available languages (es, en)
+│   ├── es/                   # common.js, roles.js, welcome.js (with the phrases), engine.js, games/<game>.js
+│   └── en/                   # The same in English
 ├── games/                    # One folder per educational game
 │   ├── index.js              # Registry: list a game here and its command, buttons and rounds appear
 │   ├── engine/               # Shared round engine
 │   │   ├── roundEngine.js    # Submissions, voting, points, glossary, timers, storage
-│   │   ├── messages.js       # Embeds, buttons, modal and texts (games can override texts)
+│   │   ├── messages.js       # Embeds, buttons and modal; texts come from locales/
 │   │   ├── command.js        # Builds /<game> start|next|cancel|scores|glossary|schedule|tutorial
 │   │   └── interaction.js    # Builds the button and modal handler for a game
 │   ├── jerga/                # Mata la jerga: index.js + terms.js
@@ -106,8 +110,10 @@ Enable Developer Mode in Discord (User Settings > Advanced). Then right-click to
 cp .env.example .env      # then fill in the values
 ```
 
-Welcome phrases live in [`src/config/welcomePhrases.js`](src/config/welcomePhrases.js). `{user}` becomes
-the mention and `{server}` the server name.
+`BOT_LANGUAGE` picks the language of everything the bot says: `es` (default) or `en`. Texts live in
+`src/locales/<language>/`; the welcome phrases are in each language's `welcome.js`, where `{user}` becomes
+the mention and `{server}` the server name. After changing the language, run `npm run deploy` so the
+command descriptions are registered in the new language.
 
 ### 5. Install, register commands, run
 
@@ -212,15 +218,32 @@ people answer through a form, answers are voted anonymously, the winner gets poi
 to the glossary. To add one:
 
 1. Copy `src/games/jerga/` to `src/games/<id>/` and edit `index.js`: the id becomes the command name
-   (`/<id>`) and the customId prefix; `pickPrompt` chooses what to ask, `promptBody` renders it,
-   `validateAnswer` rejects bad answers, `tutorial` writes the instructions. Texts such as the answer
-   noun can be overridden in `strings`.
-2. Add it to the list in `src/games/index.js`.
-3. Run `npm run deploy`.
+   (`/<id>`) and the customId prefix; `pickPrompt` chooses what to ask, `promptBody` renders it and
+   `validateAnswer` rejects bad answers.
+2. Create `src/locales/es/games/<id>.js` (and its `en/` counterpart) with the name, description, texts
+   and `tutorial` of the game; the answer noun and any engine text can be overridden in `strings`.
+   Register it in each language's `index.js`.
+3. Add it to the list in `src/games/index.js`.
+4. Run `npm run deploy`.
 
 The command, the buttons, the scheduler rotation, scores and glossary come for free. Set `mode: 'judge'` with a
 `pickWinners` function to skip voting and decide by a rule, or `mode: 'choice'` with `options` and `correct` in
 the prompt for lettered answers.
+
+### Adding a language
+
+Everything the bot says comes from `src/locales/<code>/` and is chosen with `BOT_LANGUAGE` in `.env` (`es`
+by default, `en` available). To add one:
+
+1. Copy `src/locales/es/` to `src/locales/<code>/` and translate its files: `common.js`, `roles.js`,
+   `welcome.js` (includes the welcome phrases), `engine.js` and `games/<game>.js`.
+2. Register it in `src/locales/index.js`.
+3. Run `npm run check:locales` to see which keys are missing or extra compared with Spanish, and
+   `npm run deploy` to register the command descriptions in the new language.
+
+Any missing key falls back to Spanish with a warning in the log. Command names (`/jerga`, `/triaje`...) do
+not change with the language, and the game banks (terms, cases, questions, code snippets) are Spanish
+content that is not translated either.
 
 ### Other things
 

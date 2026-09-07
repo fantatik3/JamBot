@@ -83,6 +83,8 @@ module.exports = Object.freeze({
   autoRoleId: process.env.AUTO_ROLE_ID || null,
   testerRoleId: firstEnv(['TEST_ROLE_ID', 'PREVIEW_ROLE_ID'])?.raw ?? null,
   logLevel: (process.env.LOG_LEVEL || 'info').toLowerCase(),
+  // Idioma de todo lo que dice el bot. Los idiomas disponibles están en src/locales (es por defecto).
+  language: (process.env.BOT_LANGUAGE || 'es').trim().toLowerCase(),
 
   // Juegos educativos (los nombres JERGA_* de rondas y horas siguen funcionando por compatibilidad)
   games: Object.freeze({

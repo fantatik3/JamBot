@@ -7,6 +7,7 @@ const config = require('../config');
 const logger = require('../utils/logger');
 const { buildWelcomeMessage } = require('../services/welcomeService');
 const roleService = require('../services/roleService');
+const { t } = require('../i18n');
 
 module.exports = {
   name: Events.GuildMemberAdd,
@@ -55,7 +56,7 @@ async function applyAutoRole(member) {
   }
 
   try {
-    await roleService.addRole(member, role, 'Rol automático al unirse');
+    await roleService.addRole(member, role, t('roles.reasons.autoRole'));
   } catch (error) {
     logger.error(`Failed to apply auto-role to ${member.user.tag}:`, error.message ?? error);
   }
