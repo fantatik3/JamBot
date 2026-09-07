@@ -22,12 +22,47 @@ function load() {
   return cache;
 }
 
+/**
+ * Guarda el almacén en disco. Nunca lanza: si el disco falla, se avisa en el log y el juego
+ * sigue con el estado en memoria (se perdería solo al reiniciar).
+ */
 function save() {
   const data = load();
-  fs.mkdirSync(path.dirname(STORE_PATH), { recursive: true });
+  const json = JSON.stringify(data, null, 2);
   const tmp = `${STORE_PATH}.tmp`;
-  fs.writeFileSync(tmp, JSON.stringify(data, null, 2));
-  fs.renameSync(tmp, STORE_PATH);
+
+  try {
+    fs.mkdirSync(path.dirname(STORE_PATH), { recursive: true });
+    fs.writeFileSync(tmp, json);
+  } catch (error) {
+    logger.error(`Could not write ${tmp} (${error.code ?? error.message}); state stays in memory only.`);
+    return false;
+  }
+
+  // En Windows, renombrar justo después de escribir puede fallar un instante (antivirus, indexado).
+  // Se reintenta unas veces y, si sigue fallando, se escribe el archivo directamente.
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    try {
+      fs.renameSync(tmp, STORE_PATH);
+      return true;
+    } catch (error) {
+      if (attempt < 4) {
+        const until = Date.now() + 20 * (attempt + 1);
+        while (Date.now() < until) { /* espera breve antes de reintentar */ }
+        continue;
+      }
+      logger.warn(`Could not replace ${STORE_PATH} atomically (${error.code}); writing it directly.`);
+    }
+  }
+
+  try {
+    fs.writeFileSync(STORE_PATH, json);
+    try { fs.unlinkSync(tmp); } catch { /* el temporal puede haberse ido ya */ }
+    return true;
+  } catch (error) {
+    logger.error(`Could not write ${STORE_PATH} (${error.code ?? error.message}); state stays in memory only.`);
+    return false;
+  }
 }
 
 /** Devuelve (y crea si no existe) un objeto de primer nivel del almacén por nombre. */

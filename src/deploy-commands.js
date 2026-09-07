@@ -28,6 +28,6 @@ async function main() {
 }
 
 main().catch((error) => {
-  logger.error('Failed to register commands:', error);
-  process.exit(1);
+  logger.error("Failed to register commands:", error);
+  process.exitCode = 1;
 });

@@ -15,6 +15,7 @@ module.exports = {
 
   /** @param {import('discord.js').Interaction} interaction */
   async execute(interaction) {
+    if (isDuplicate(interaction)) return;
     try {
       if (interaction.isChatInputCommand()) {
         await handleCommand(interaction);
@@ -26,6 +27,22 @@ module.exports = {
     }
   },
 };
+
+// Discord entrega cada interacción una sola vez, pero tras una reconexión del gateway puede
+// repetir alguna. Se recuerdan los ids recientes para no responder dos veces a la misma.
+const SEEN_TTL_MS = 15 * 60 * 1000;
+const seen = new Map();
+
+function isDuplicate(interaction) {
+  const now = Date.now();
+  for (const [id, at] of seen) if (now - at > SEEN_TTL_MS) seen.delete(id);
+  if (seen.has(interaction.id)) {
+    logger.warn('Interaction ' + interaction.id + ' was delivered twice; ignoring the repeat.');
+    return true;
+  }
+  seen.set(interaction.id, now);
+  return false;
+}
 
 async function handleCommand(interaction) {
   const command = interaction.client.commands.get(interaction.commandName);
@@ -49,6 +66,20 @@ async function handleComponent(interaction) {
 }
 
 async function reportError(interaction, error) {
+  // 40060: otra copia del bot, conectada con el mismo token, respondió antes a esta interacción.
+  if (error?.code === 40060) {
+    let detail = '';
+    try {
+      const original = await interaction.fetchReply();
+      const text = original.content || original.embeds?.[0]?.title || '(sin texto)';
+      detail = ' That reply says: "' + text.slice(0, 120) + '".';
+    } catch { /* no se pudo leer la respuesta ajena */ }
+    logger.warn(
+      'Another copy of this bot answered interaction ' + interaction.id + ' first (Discord error 40060).' + detail + ' Run a single instance.',
+    );
+    return;
+  }
+
   const isUserFacing = error instanceof UserFacingError;
   if (!isUserFacing) logger.error(`Error handling interaction ${interaction.id}:`, error);
 

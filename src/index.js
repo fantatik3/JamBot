@@ -33,5 +33,7 @@ for (const signal of ["SIGINT", "SIGTERM"]) {
 
 client.login(config.token).catch((error) => {
   logger.error("Failed to log in:", error);
-  process.exit(1);
+  // Cerrar el cliente antes de salir evita el aviso de libuv al terminar el proceso en Windows.
+  client.destroy();
+  process.exitCode = 1;
 });
